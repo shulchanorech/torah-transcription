@@ -108,6 +108,26 @@
         #passwordGate .gate-error { color: #dc2626; font-size: 0.85rem; margin-top: 0.75rem; min-height: 1.2rem; font-weight: 600; }
         #passwordGate .gate-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
         body.gated { overflow: hidden; }
+        /* v8.6: שיפורי UX — סטטוס דביק, מובייל, מעברים רכים */
+        #pipelineStatus { position: sticky; top: 8px; z-index: 50; box-shadow: 0 4px 12px rgba(59,130,246,0.15); }
+        #editStatus { position: sticky; top: 8px; z-index: 49; }
+        /* מעברים רכים להופעת קטעים */
+        .stage-card { animation: fadeInUp 0.4s ease; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        /* מובייל — מניעת גלישת אופקית, כפתורים נוחים יותר */
+        @media (max-width: 640px) {
+            body { padding: 0.5rem !important; }
+            .max-w-5xl { padding: 1rem !important; }
+            h1 { font-size: 1.5rem !important; }
+            button { min-height: 42px; }
+            .chunk-row { grid-template-columns: 1fr !important; gap: 4px !important; }
+            select, input[type="text"], input[type="password"], input[type="url"], input[type="number"] { font-size: 16px !important; } /* מונע זום אוטומטי ב-iOS */
+            #passwordGate .gate-card { padding: 1.75rem 1.25rem; }
+        }
+        /* גלילה חלקה כללית */
+        html { scroll-behavior: smooth; }
+        /* כפתורים — משוב מגע */
+        button:active { transform: scale(0.985); }
     </style>
 </head>
 <body class="p-4 md:p-10 text-gray-800 gated">
@@ -117,10 +137,11 @@
         <div class="gate-card">
             <div class="gate-icon">📜</div>
             <h2>מערכת תמלול תורני חכם</h2>
-            <p class="gate-sub">הזן סיסמת גישה כדי להיכנס</p>
-            <input type="password" id="gatePassword" placeholder="סיסמה..." autocomplete="off" onkeydown="if(event.key==='Enter') checkGatePassword()">
+            <p class="gate-sub">תמלול והגהה אוטומטיים של שיעורי תורה — מהקלטה לטקסט ערוך</p>
+            <input type="password" id="gatePassword" placeholder="סיסמת גישה..." autocomplete="off" onkeydown="if(event.key==='Enter') checkGatePassword()">
             <button onclick="checkGatePassword()">כניסה</button>
             <div class="gate-error" id="gateError"></div>
+            <p style="font-size:0.72rem; color:#9ca3af; margin-top:1rem;">הגישה מוגבלת. כל משתמש מזין מפתח Gemini API חינמי משלו.</p>
         </div>
     </div>
 
@@ -132,6 +153,23 @@
                 <p class="text-gray-500 text-sm mt-1">העלה הקלטה, לחץ "התחל". זהו.</p>
             </div>
             <button id="toggleModeBtn" class="toggle-mode-btn" onclick="toggleCompactMode()">⚙️ הצג הגדרות מתקדמות</button>
+        </div>
+
+        <!-- v8.6: באנר הדרכה למשתמש חדש — מוצג רק כשאין מפתח API -->
+        <div id="welcomeBanner" class="hidden mb-6 p-4 bg-gradient-to-l from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+            <div class="flex items-start gap-3">
+                <span class="text-2xl">👋</span>
+                <div class="flex-1">
+                    <p class="font-bold text-blue-900 mb-1">ברוך הבא! שלושה צעדים כדי להתחיל:</p>
+                    <ol class="text-sm text-blue-800 space-y-1" style="list-style: none; padding: 0;">
+                        <li><strong>1.</strong> השג מפתח Gemini API חינמי — <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline font-semibold">לחץ כאן ל-AI Studio</a>, צור מפתח, והדבק אותו בשדה "מפתח Gemini API" למטה.</li>
+                        <li><strong>2.</strong> העלה קובץ הקלטה (MP3/WAV/M4A) או הדבק קישור YouTube.</li>
+                        <li><strong>3.</strong> לחץ "🚀 התחל צינור עיבוד מלא" — המערכת תתמלל, תבדוק ותכין לעריכה.</li>
+                    </ol>
+                    <p class="text-xs text-blue-600 mt-2">💡 המפתח נשמר רק בדפדפן שלך (אם תסמן "שמור מפתחות"). הבאנר ייעלם כשתזין מפתח.</p>
+                </div>
+                <button onclick="document.getElementById('welcomeBanner').classList.add('hidden')" class="text-blue-400 hover:text-blue-700 text-lg" title="סגור">✕</button>
+            </div>
         </div>
 
         <!-- ============================================== -->
@@ -651,7 +689,7 @@
         // הערה: זוהי הגנה רכה. הלוגיקה רצה בדפדפן, ולכן מי שמבין בקוד יכול לעקוף.
         // מספיק כדי למנוע כניסה מזדמנת — לא תחליף לאימות-שרת אמיתי.
         // =======================================================
-        const ACCESS_HASH = "b54138b71a843836df6b90fc902bbcc696596ceb3fed18e60ebbb3f918c92ce9";
+        const ACCESS_HASH = "6a4474cd07d1d5b900beeba9c20526538b1b0820034def1d086909f836bcce68";
 
         async function sha256Hex(str) {
             const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -1693,7 +1731,12 @@
         function activateStageCard(sectionId) {
             document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('active'));
             const el = document.getElementById(sectionId);
-            if (el) { el.classList.remove('hidden'); el.classList.add('active'); }
+            if (el) {
+                el.classList.remove('hidden');
+                el.classList.add('active');
+                // v8.6: גלילה חלקה לשלב הפעיל — המשתמש "עוקב" אחרי הזרימה
+                try { el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+            }
         }
 
         function renderAnchorChips(anchorsText) {
@@ -1794,11 +1837,27 @@
             });
         }
 
+        // v8.6: הצג/הסתר באנר ברוכים-הבאים לפי מצב מפתח ה-API
+        function updateWelcomeBanner() {
+            const banner = document.getElementById('welcomeBanner');
+            if (!banner) return;
+            const key = document.getElementById('geminiApiKey')?.value?.trim();
+            if (key && key.length > 10) {
+                banner.classList.add('hidden');
+            } else {
+                banner.classList.remove('hidden');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadStoredKeys();
             try { updateNotificationButtonUI(); } catch (e) {}
             try { initCompactMode(); } catch (e) {}
             try { onEditIntensityChange(); } catch (e) {} // v7.6: תיאור-slider עריכה
+            try { updateWelcomeBanner(); } catch (e) {} // v8.6: באנר הדרכה
+            // עדכון הבאנר כשמזינים/מוחקים מפתח
+            const gk = document.getElementById('geminiApiKey');
+            if (gk) gk.addEventListener('input', () => { try { updateWelcomeBanner(); } catch (e) {} });
             document.getElementById('audioFile').addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -4262,6 +4321,16 @@
         }
 
 
+    </script>
+    <!-- v8.6: כפתור חזרה למעלה -->
+    <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="חזרה למעלה"
+        style="position:fixed; bottom:20px; left:20px; z-index:60; width:44px; height:44px; border-radius:50%; background:#4338ca; color:white; border:none; font-size:1.2rem; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.25); display:none;">⬆️</button>
+    <script>
+        // v8.6: הצגת כפתור "חזרה למעלה" בגלילה
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('scrollTopBtn');
+            if (btn) btn.style.display = window.scrollY > 400 ? 'block' : 'none';
+        });
     </script>
 </body>
 </html>
