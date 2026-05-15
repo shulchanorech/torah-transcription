@@ -1324,6 +1324,14 @@ function updateApiKeyHint() {
     else hint.textContent = '';
 }
 
+function toggleApiKeyVisibility(fieldId, buttonId) {
+    const field = document.getElementById(fieldId);
+    const button = document.getElementById(buttonId);
+    if (!field) return;
+    field.type = field.type === 'password' ? 'text' : 'password';
+    if (button) button.textContent = field.type === 'password' ? '👁️' : '🙈';
+}
+
 // =======================================================
 // v9: בדיקת מפתח אוטומטית ושקטה + מעבר אוטומטי למודל חינמי
 // המערכת בודקת את המפתח ברקע ומציגה ✓/❌. אם המפתח שייך
@@ -4086,8 +4094,8 @@ function showProjectSaveStatus(state) {
 function updateProjectBarUI() {
     if (!activeProject) return;
     const nameEl = document.getElementById('pbName');
-    if (nameEl && nameEl.textContent !== activeProject.name) {
-        nameEl.textContent = activeProject.name;
+    if (nameEl && nameEl.value !== activeProject.name) {
+        nameEl.value = activeProject.name;
     }
     const metaEl = document.getElementById('pbMeta');
     if (metaEl) {
@@ -4218,7 +4226,7 @@ function renameActiveProject(newName) {
     if (!trimmed) {
         // החזרת השם הקודם אם ריק
         const nameEl = document.getElementById('pbName');
-        if (nameEl) nameEl.textContent = activeProject.name;
+        if (nameEl) nameEl.value = activeProject.name;
         return;
     }
     activeProject.name = trimmed;
@@ -4330,10 +4338,10 @@ function wireProjectAutosave() {
     document.querySelectorAll('input[name="editStyle"]').forEach(r => {
         r.addEventListener('change', () => { if (activeProject) scheduleProjectAutosave(); });
     });
-    // שם הפרויקט (contenteditable)
+    // שם הפרויקט (שדה טקסט)
     const nameEl = document.getElementById('pbName');
     if (nameEl) {
-        nameEl.addEventListener('blur', () => renameActiveProject(nameEl.textContent));
+        nameEl.addEventListener('blur', () => renameActiveProject(nameEl.value));
         nameEl.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
         });

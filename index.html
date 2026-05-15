@@ -35,7 +35,7 @@
         <!-- v9: סרגל פרויקט -->
         <div class="project-bar">
             <span class="pb-label">📁 פרויקט:</span>
-            <span class="pb-name" id="pbName" contenteditable="true" spellcheck="false" title="לחץ לעריכת שם הפרויקט">פרויקט חדש</span>
+            <input id="pbName" class="pb-name-input" type="text" autocomplete="off" value="פרויקט חדש" spellcheck="false" title="הקלד שם לפרויקט. השם נשמר אוטומטית בלחיצה מחוץ לשדה." aria-label="שם הפרויקט">
             <span class="pb-meta" id="pbMeta"></span>
             <span class="pb-spacer"></span>
             <span class="pb-save-status saved" id="pbSaveStatus">✓ נשמר</span>
@@ -84,7 +84,10 @@
                     <!-- Gemini — חובה -->
                     <div class="bg-white p-4 rounded-lg border border-blue-200">
                         <label class="block text-sm font-semibold mb-2 text-blue-900">🔵 מפתח Gemini API <span class="text-xs text-red-600">(חובה)</span></label>
-                        <input type="password" id="geminiApiKey" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="מתחיל ב-AIza...">
+                        <div class="input-with-toggle">
+                            <input type="password" id="geminiApiKey" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="מתחיל ב-AIza...">
+                            <button type="button" id="geminiKeyToggle" class="api-key-toggle" onclick="toggleApiKeyVisibility('geminiApiKey','geminiKeyToggle')" aria-label="הצג או הסתר מפתח Gemini">👁️</button>
+                        </div>
                         <div class="mt-2 flex items-center gap-2 flex-wrap">
                             <button type="button" onclick="testGeminiApiKey()" id="testKeyBtn" class="text-xs bg-blue-100 text-blue-800 px-3 py-1.5 rounded hover:bg-blue-200 font-semibold">🔑 בדוק תקינות המפתח</button>
                             <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-blue-700 underline hover:text-blue-900">🔗 קבל מפתח חינמי מ-AI Studio</a>
@@ -96,7 +99,10 @@
                     <!-- Claude — אופציונלי -->
                     <div class="bg-white p-4 rounded-lg border border-amber-200">
                         <label class="block text-sm font-semibold mb-2 text-amber-900">🟠 מפתח Anthropic Claude <span class="text-xs text-gray-500">(אופציונלי)</span></label>
-                        <input type="password" id="claudeApiKey" class="w-full p-2 border rounded focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="sk-ant-...">
+                        <div class="input-with-toggle">
+                            <input type="password" id="claudeApiKey" class="w-full p-2 border rounded focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="sk-ant-...">
+                            <button type="button" id="claudeKeyToggle" class="api-key-toggle" onclick="toggleApiKeyVisibility('claudeApiKey','claudeKeyToggle')" aria-label="הצג או הסתר מפתח Claude">👁️</button>
+                        </div>
                         <p class="text-xs text-gray-500 mt-2">רק אם תרצה להשתמש ב-Claude לשלבי עריכת הטקסט (נבחר בהגדרות הספקים). שלב התמלול תמיד מתבצע ב-Gemini.</p>
                     </div>
                 </div>
