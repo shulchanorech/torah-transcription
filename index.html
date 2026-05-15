@@ -14,14 +14,32 @@
 <body class="p-4 md:p-10 text-gray-800 gated">
 
     <div id="passwordGate">
-        <div class="gate-card">
-            <div class="gate-icon">📜</div>
-            <h2>שולחן עורך</h2>
-            <p class="gate-sub">ארגז הכלים המלא לעורך התורני</p>
-            <input type="password" id="gatePassword" placeholder="סיסמת גישה..." autocomplete="off" onkeydown="if(event.key==='Enter') checkGatePassword()">
-            <button onclick="checkGatePassword()">כניסה</button>
-            <div class="gate-error" id="gateError"></div>
-            <p style="font-size:0.72rem; color:#9ca3af; margin-top:1rem;">הגישה מוגבלת. כל משתמש מזין מפתח Gemini API חינמי משלו.</p>
+        <div class="gate-overlay"></div>
+        <div class="gate-content">
+            <div class="gate-card">
+                <div class="gate-card-header">
+                    <div class="gate-icon">📜</div>
+                    <div>
+                        <h2 class="gate-title">שולחן עורך</h2>
+                        <p class="gate-subtitle">ארגז הכלים לעורך התורני</p>
+                    </div>
+                </div>
+                <div class="gate-card-body">
+                    <p class="gate-description">כניסה מאובטחת לכלי העורך המתקדם. הזן את סיסמת הגישה.</p>
+                    <div class="gate-input-group">
+                        <input type="password" id="gatePassword" placeholder="סיסמת גישה..." autocomplete="off" onkeydown="if(event.key==='Enter') checkGatePassword()">
+                        <span class="gate-input-icon">🔐</span>
+                    </div>
+                    <button class="gate-button" onclick="checkGatePassword()">
+                        <span>כניסה</span>
+                        <span class="gate-button-arrow">→</span>
+                    </button>
+                    <div class="gate-error" id="gateError"></div>
+                </div>
+                <div class="gate-card-footer">
+                    <p>כל משתמש מוזן מפתח Gemini API משלו</p>
+                </div>
+            </div>
         </div>
     </div>
 
