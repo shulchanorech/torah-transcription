@@ -1,4 +1,27 @@
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f3f4f6 0%, #e0e7ff 100%); min-height: 100vh; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:
+        radial-gradient(900px 500px at 85% -5%, rgba(99,102,241,0.16), transparent 60%),
+        radial-gradient(800px 460px at 5% 105%, rgba(139,92,246,0.14), transparent 60%),
+        linear-gradient(135deg, #eef2ff 0%, #e0e7ff 45%, #ede9fe 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #1f2937;
+}
+/* v9: מיכל ראשי — מוקפד יותר */
+.max-w-5xl {
+    box-shadow: 0 24px 60px -20px rgba(30,41,59,0.22), 0 0 0 1px rgba(255,255,255,0.6) inset !important;
+    border-radius: 24px !important;
+    backdrop-filter: blur(2px);
+}
+/* v9: כותרת ראשית — מודגשת */
+.max-w-5xl > div:first-child h1 {
+    background: linear-gradient(120deg, #1e3a8a, #4338ca, #6d28d9);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+/* v9: כותרות מקטעים (h3) — קו-צבע עדין מימין */
+.max-w-5xl h3 { position: relative; }
 .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 22px; height: 22px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-left: 8px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .timer { font-family: monospace; font-size: 1.05em; color: #4b5563; font-weight: bold; margin-right: 8px; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; }
@@ -85,17 +108,84 @@ h2, h3 { letter-spacing: -0.005em; }
 .speaker-b { background: #ede9fe; color: #5b21b6; }            /* דובר ב' - סגול */
 .speaker-c { background: #fce7f3; color: #be185d; }            /* דובר ג' - ורוד */
 .speaker-d { background: #ccfbf1; color: #115e59; }            /* דובר ד' - טורקיז */
-/* v8.5: מסך כניסה עם סיסמה */
-#passwordGate { position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1e3a8a 0%, #4338ca 50%, #6d28d9 100%); }
-#passwordGate .gate-card { background: white; border-radius: 20px; padding: 2.5rem 2rem; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.4); text-align: center; }
-#passwordGate h2 { font-size: 1.6rem; font-weight: bold; color: #1e3a8a; margin-bottom: 0.3rem; }
-#passwordGate .gate-sub { color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem; }
-#passwordGate input { width: 100%; padding: 0.75rem 1rem; border: 2px solid #c7d2fe; border-radius: 10px; font-size: 1rem; outline: none; text-align: center; transition: border-color 0.2s; }
-#passwordGate input:focus { border-color: #4338ca; }
-#passwordGate button { width: 100%; margin-top: 1rem; padding: 0.75rem; background: linear-gradient(to left, #4338ca, #6d28d9); color: white; font-weight: bold; font-size: 1rem; border: none; border-radius: 10px; cursor: pointer; transition: opacity 0.2s; }
-#passwordGate button:hover { opacity: 0.92; }
+/* v9: מסך כניסה — עיצוב מוקפד ומרשים */
+#passwordGate {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 35%, #4338ca 70%, #6d28d9 100%);
+    background-size: 200% 200%;
+    animation: gateGradient 14s ease infinite;
+    overflow: hidden;
+}
+@keyframes gateGradient {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+/* הילה רכה מאחורי הכרטיס */
+#passwordGate::before, #passwordGate::after {
+    content: ''; position: absolute; border-radius: 50%;
+    filter: blur(80px); opacity: 0.5; pointer-events: none;
+}
+#passwordGate::before { width: 360px; height: 360px; background: #6366f1; top: -120px; right: -80px; }
+#passwordGate::after  { width: 320px; height: 320px; background: #8b5cf6; bottom: -110px; left: -70px; }
+#passwordGate .gate-card {
+    position: relative;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 26px;
+    padding: 3rem 2.5rem 2.5rem;
+    max-width: 430px; width: 100%;
+    box-shadow: 0 30px 80px -12px rgba(15,23,42,0.55), 0 0 0 1px rgba(255,255,255,0.1);
+    text-align: center;
+    animation: gateCardIn 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes gateCardIn {
+    from { opacity: 0; transform: translateY(24px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+#passwordGate .gate-icon {
+    font-size: 3rem; margin-bottom: 0.6rem;
+    display: inline-block;
+    filter: drop-shadow(0 4px 10px rgba(67,56,202,0.35));
+    animation: gateIconFloat 3.5s ease-in-out infinite;
+}
+@keyframes gateIconFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-7px); }
+}
+#passwordGate h2 {
+    font-size: 1.85rem; font-weight: 800;
+    background: linear-gradient(120deg, #1e3a8a, #6d28d9);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.35rem; letter-spacing: -0.02em;
+}
+#passwordGate .gate-sub { color: #64748b; font-size: 0.95rem; margin-bottom: 1.75rem; }
+#passwordGate input {
+    width: 100%; padding: 0.85rem 1.1rem;
+    border: 2px solid #e2e8f0; border-radius: 13px;
+    font-size: 1.05rem; outline: none; text-align: center;
+    background: #f8fafc;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+#passwordGate input:focus {
+    border-color: #6d28d9; background: white;
+    box-shadow: 0 0 0 4px rgba(109,40,217,0.13);
+}
+#passwordGate button {
+    width: 100%; margin-top: 1.1rem; padding: 0.9rem;
+    background: linear-gradient(120deg, #4338ca, #6d28d9);
+    color: white; font-weight: 700; font-size: 1.05rem;
+    border: none; border-radius: 13px; cursor: pointer;
+    box-shadow: 0 10px 24px -6px rgba(76,29,149,0.5);
+    transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+}
+#passwordGate button:hover { filter: brightness(1.08); box-shadow: 0 14px 30px -6px rgba(76,29,149,0.6); }
+#passwordGate button:active { transform: scale(0.98); }
 #passwordGate .gate-error { color: #dc2626; font-size: 0.85rem; margin-top: 0.75rem; min-height: 1.2rem; font-weight: 600; }
-#passwordGate .gate-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
 body.gated { overflow: hidden; }
 /* v8.6: שיפורי UX — סטטוס דביק, מובייל, מעברים רכים */
 #pipelineStatus { position: sticky; top: 8px; z-index: 50; box-shadow: 0 4px 12px rgba(59,130,246,0.15); }
@@ -124,28 +214,31 @@ button:active { transform: scale(0.985); }
 .tab-bar {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    border-bottom: 2px solid #e5e7eb;
-    margin-bottom: 1.5rem;
+    gap: 6px;
+    padding: 6px;
+    background: linear-gradient(135deg, #f1f5f9, #eef2ff);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    margin-bottom: 1.75rem;
 }
 .tab-btn {
-    padding: 12px 22px;
-    border: none;
-    border-bottom: 3px solid transparent;
+    padding: 11px 20px;
+    border: 1px solid transparent;
     background: transparent;
     cursor: pointer;
     font-weight: 700;
-    font-size: 0.98rem;
-    color: #6b7280;
-    transition: all 0.18s;
-    border-radius: 8px 8px 0 0;
+    font-size: 0.97rem;
+    color: #64748b;
+    transition: all 0.18s ease;
+    border-radius: 11px;
     white-space: nowrap;
 }
-.tab-btn:hover { color: #4338ca; background: #f5f3ff; }
+.tab-btn:hover { color: #4338ca; background: rgba(255,255,255,0.7); }
 .tab-btn.active {
     color: #4338ca;
-    border-bottom-color: #4338ca;
-    background: #eef2ff;
+    background: #ffffff;
+    border-color: #e0e7ff;
+    box-shadow: 0 6px 16px -6px rgba(67,56,202,0.35), 0 1px 0 rgba(255,255,255,0.9) inset;
 }
 .tab-btn .tab-icon { font-size: 1.15rem; margin-left: 6px; }
 .tab-btn .tab-step-num {
@@ -158,8 +251,13 @@ button:active { transform: scale(0.985); }
     border-radius: 50%;
     font-size: 0.78rem;
     margin-left: 6px;
+    transition: all 0.18s ease;
 }
-.tab-btn.active .tab-step-num { background: #4338ca; color: white; }
+.tab-btn.active .tab-step-num {
+    background: linear-gradient(120deg, #4338ca, #6d28d9);
+    color: white;
+    box-shadow: 0 2px 8px rgba(76,29,149,0.4);
+}
 .tab-panel { display: none; animation: fadeInUp 0.35s ease; }
 .tab-panel.active { display: block; }
 /* טאב שטרם זמין — placeholder */
@@ -484,88 +582,4 @@ button:active { transform: scale(0.985); }
     box-shadow: 0 0 0 3px rgba(67,56,202,0.12);
     background: #eef2ff;
 }
-.route-radio { position: absolute; opacity: 0; pointer-events: none; }
-.route-card-body { padding: 16px 18px; }
-.route-card-icon { font-size: 2rem; margin-bottom: 6px; }
-.route-card-title { font-size: 1.1rem; font-weight: 700; color: #1e3a8a; margin-bottom: 4px; }
-.route-card-desc { font-size: 0.85rem; color: #6b7280; line-height: 1.5; }
-
-/* כלי הגהה — פריטי תיקון */
-.proof-list-head {
-    padding: 6px 4px; margin-bottom: 6px;
-    border-bottom: 1px solid #e5e7eb;
-}
-.proof-checkall { font-size: 0.85rem; font-weight: 600; color: #4b5563; cursor: pointer; }
-.proof-checkall input { margin-left: 6px; }
-.proof-item {
-    display: flex; gap: 10px; align-items: flex-start;
-    padding: 8px 10px; margin-bottom: 6px;
-    background: white; border: 1px solid #e5e7eb;
-    border-radius: 8px;
-}
-.proof-item-check { padding-top: 2px; }
-.proof-item-body { flex: 1; }
-.proof-fix-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.proof-found {
-    background: #fee2e2; color: #991b1b;
-    padding: 2px 8px; border-radius: 5px;
-    font-weight: 600; text-decoration: line-through;
-}
-.proof-arrow { color: #6b7280; font-weight: bold; }
-.proof-suggestion {
-    background: #d1fae5; color: #065f46;
-    padding: 2px 8px; border-radius: 5px; font-weight: 700;
-}
-.proof-rule { font-size: 0.78rem; color: #6b7280; margin-top: 3px; }
-
-/* אחידות כתיב */
-.proof-consistency-item {
-    padding: 10px 12px; margin-bottom: 8px;
-    background: white; border: 1px solid #c7d2fe;
-    border-radius: 8px;
-}
-.proof-cn-variants { font-size: 0.88rem; color: #374151; margin-bottom: 6px; }
-.proof-cn-choose { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.proof-cn-label { font-size: 0.82rem; font-weight: 600; color: #4338ca; }
-.proof-cn-btn {
-    padding: 3px 10px; border-radius: 6px;
-    border: 1px solid #d1d5db; background: white;
-    font-size: 0.82rem; cursor: pointer; transition: all 0.15s;
-}
-.proof-cn-btn:hover { border-color: #6366f1; }
-.proof-cn-btn.proof-cn-active {
-    border-color: #4338ca; background: #eef2ff;
-    color: #4338ca; font-weight: 700;
-}
-
-/* ציטוטים סמויים */
-.proof-hc-quote {
-    font-size: 0.92rem; color: #1f2937;
-    background: #f0fdfa; padding: 5px 9px;
-    border-radius: 6px; line-height: 1.6;
-}
-.proof-hc-ref { font-size: 0.82rem; color: #374151; margin-top: 4px; }
-.proof-hc-notfound { color: #d97706; font-size: 0.76rem; }
-
-/* הודעות הגהה */
-.proof-error {
-    background: #fef2f2; border-right: 4px solid #ef4444; color: #991b1b;
-}
-.proof-notice {
-    background: #f0fdf4; border-right: 4px solid #22c55e; color: #166534;
-}
-
-
-/* ======================================================= */
-/* v9 שלב ד': טאב הוצאה לאור                                 */
-/* ======================================================= */
-.pub-error {
-    background: #fef2f2; border-right: 4px solid #ef4444; color: #991b1b;
-}
-.pub-notice {
-    background: #f0fdf4; border-right: 4px solid #22c55e; color: #166534;
-}
-.publish-preview-frame {
-    width: 100%; height: 600px; border: none; background: #e5e7eb;
-    display: block;
-}
+.route-

@@ -9,7 +9,7 @@
 // הערה: זוהי הגנה רכה. הלוגיקה רצה בדפדפן, ולכן מי שמבין בקוד יכול לעקוף.
 // מספיק כדי למנוע כניסה מזדמנת — לא תחליף לאימות-שרת אמיתי.
 // =======================================================
-const ACCESS_HASH = "6a4474cd07d1d5b900beeba9c20526538b1b0820034def1d086909f836bcce68";
+const ACCESS_HASH = "91b594446a5b689fed65ad5268ec1c7e4f6c88f5186bd92f607f93ad011054f9";
 
 async function sha256Hex(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -666,12 +666,31 @@ function formatUSD(n) { return '$' + n.toFixed(4); }
  *   - output text: ~6500 word lesson × 1.5 tok/word = ~10000 tokens
  *   - num_calls = 1 (single) או N (chunks)
  */
+// v9: עדכון שורת העלות הבולטת מעל כפתור ההתחלה
+function updateCostBanner(state, info) {
+    const banner = document.getElementById('costBanner');
+    const text = document.getElementById('costBannerText');
+    const total = document.getElementById('costBannerTotal');
+    if (!banner || !text || !total) return;
+    if (state === 'ready') {
+        banner.classList.remove('hidden');
+        text.innerHTML = info.text;
+        total.textContent = info.total;
+    } else {
+        // אין משך-זמן עדיין — מציגים רמז עדין
+        banner.classList.remove('hidden');
+        text.innerHTML = 'בחר קובץ שמע כדי לראות הערכת עלות לפני ההרצה.';
+        total.textContent = '—';
+    }
+}
+
 function updateCostEstimate() {
     const block = document.getElementById('costEstimateBlock');
     if (!block) return;
     const duration = audioDurationSeconds;
     if (!duration || duration <= 0) {
         block.innerHTML = '<p class="text-gray-700">בחר קובץ עם משך-זמן כדי לראות הערכה.</p>';
+        updateCostBanner('empty');
         return;
     }
     const useChunks = decideUseChunks();
@@ -726,6 +745,14 @@ function updateCostEstimate() {
             <p class="mt-1 text-gray-500">ההערכה משוערת — בפועל יהיה +/- 30%. ההערכה בנויה על ${useChunks ? numChunks + ' צ\'אנקים של ' + chunkMin + ' דק\'' : 'קריאה אחת'}.</p>
         </details>
     `;
+
+    // v9: עדכון השורה הבולטת מעל כפתור ההתחלה
+    updateCostBanner('ready', {
+        text: `משך: <strong>${formatDuration(duration)}</strong> · ` +
+              `${useChunks ? numChunks + " צ'אנקים" : 'קריאה אחת'} · ` +
+              `מודל: <strong>${mainModel}</strong> · הערכה משוערת (±30%)`,
+        total: formatUSD(totalCost)
+    });
 }
 
 /**
@@ -1018,7 +1045,7 @@ function updateTextWithSmartScroll(elementId, text) {
 function setInputsDisabledState(disabled) {
     // הערה: stopBtn ו-stopEditBtn מכוונים לא להיות מושבתים, כדי לאפשר עצירה תמיד
     const ids = ['geminiApiKey', 'geminiModel', 'geminiFastModel', 'claudeApiKey', 'claudeModel',
-        'audioFile', 'youtubeUrl', 'startPipelineBtn', 'editOnlyBtn', 'customTranscriptionPrompt',
+        'audioFile', 'youtubeUrl', 'startPipelineBtn', 'customTranscriptionPrompt',
         'verifyCompleteBtn', 'forceContinueBtn', 'verifyFidelityBtn',
         'editBtn', 'customEditPrompt', 'skipAnchors', 'skipValidation'];
     ids.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = disabled; });
@@ -1145,27 +1172,14 @@ async function loadAudioMetadata(file) {
     });
 }
 
-// v8.6: הצג/הסתר באנר ברוכים-הבאים לפי מצב מפתח ה-API
-function updateWelcomeBanner() {
-    const banner = document.getElementById('welcomeBanner');
-    if (!banner) return;
-    const key = document.getElementById('geminiApiKey')?.value?.trim();
-    if (key && key.length > 10) {
-        banner.classList.add('hidden');
-    } else {
-        banner.classList.remove('hidden');
-    }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     loadStoredKeys();
+    try { initApiKeySection(); } catch (e) {} // v9: סעיף מפתח API מרכזי — מקופל/פתוח
+    try { autoValidateGeminiKey(); } catch (e) {} // v9: בדיקת מפתח שקטה בטעינה
     try { updateNotificationButtonUI(); } catch (e) {}
     try { initCompactMode(); } catch (e) {}
     try { onEditIntensityChange(); } catch (e) {} // v7.6: תיאור-slider עריכה
-    try { updateWelcomeBanner(); } catch (e) {} // v8.6: באנר הדרכה
-    // עדכון הבאנר כשמזינים/מוחקים מפתח
-    const gk = document.getElementById('geminiApiKey');
-    if (gk) gk.addEventListener('input', () => { try { updateWelcomeBanner(); } catch (e) {} });
+    try { startProjectAutoSaveInterval(); } catch (e) {} // v9: שמירה אוטומטית כל דקה
     const audioFileEl = document.getElementById('audioFile');
     if (audioFileEl) audioFileEl.addEventListener('change', async (e) => {
         const file = e.target.files[0];
@@ -1193,14 +1207,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', () => { try { updateCostEstimate(); } catch(e) {} });
     });
+    // v9: המפתחות נשמרים תמיד אוטומטית (localStorage) — בלי תיבת סימון
     ['geminiApiKey', 'claudeApiKey'].forEach(id => {
         const keyEl = document.getElementById(id);
         if (!keyEl) return;
-        keyEl.addEventListener('blur', () => {
-            const remember = document.getElementById('rememberKeys');
-            if (remember && remember.checked) saveStoredKeys();
-        });
+        keyEl.addEventListener('blur', () => { try { saveStoredKeys(); } catch (e) {} });
+        keyEl.addEventListener('input', () => { try { updateApiKeyHint(); } catch (e) {} });
     });
+    // v9: בדיקת מפתח Gemini אוטומטית — 2 שניות אחרי שמפסיקים להקליד
+    const gkEl = document.getElementById('geminiApiKey');
+    if (gkEl) gkEl.addEventListener('input', () => { try { scheduleAutoKeyCheck(); } catch (e) {} });
+    // v9: שינוי המודל הראשי → רענון בדיקת זמינות מול החשבון
+    const gmEl = document.getElementById('geminiModel');
+    if (gmEl) gmEl.addEventListener('change', () => { try { autoValidateGeminiKey(true); } catch (e) {} });
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
@@ -1210,23 +1229,27 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // =======================================================
-// שמירת מפתחות
+// v9: ניהול מפתחות API — סעיף מרכזי בראש העמוד
+// המפתח מוזן פעם אחת, נשמר תמיד ב-localStorage, ומשמש לכל המסלולים.
 // =======================================================
 function saveStoredKeys() {
-    if (!document.getElementById('rememberKeys').checked) return;
+    // v9: שמירה תמידית — אין יותר תיבת "זכור מפתחות".
     try {
-        localStorage.setItem('torahApp_geminiKey', document.getElementById('geminiApiKey').value);
-        localStorage.setItem('torahApp_claudeKey', document.getElementById('claudeApiKey').value);
-        localStorage.setItem('torahApp_remember', '1');
+        const gk = document.getElementById('geminiApiKey');
+        const ck = document.getElementById('claudeApiKey');
+        if (gk) localStorage.setItem('torahApp_geminiKey', gk.value || '');
+        if (ck) localStorage.setItem('torahApp_claudeKey', ck.value || '');
     } catch (e) {}
 }
 function loadStoredKeys() {
     try {
-        if (localStorage.getItem('torahApp_remember') === '1') {
-            document.getElementById('rememberKeys').checked = true;
-            document.getElementById('geminiApiKey').value = localStorage.getItem('torahApp_geminiKey') || '';
-            document.getElementById('claudeApiKey').value = localStorage.getItem('torahApp_claudeKey') || '';
-        }
+        const gk = document.getElementById('geminiApiKey');
+        const ck = document.getElementById('claudeApiKey');
+        // תאימות לאחור: גרסאות קודמות שמרו רק אם torahApp_remember=1 — כעת תמיד טוענים אם קיים.
+        if (gk) gk.value = localStorage.getItem('torahApp_geminiKey') || '';
+        if (ck) ck.value = localStorage.getItem('torahApp_claudeKey') || '';
+        // ניקוי דגל ישן שלא בשימוש עוד
+        localStorage.removeItem('torahApp_remember');
     } catch (e) {}
 }
 function clearStoredKeys() {
@@ -1234,9 +1257,176 @@ function clearStoredKeys() {
         localStorage.removeItem('torahApp_geminiKey');
         localStorage.removeItem('torahApp_claudeKey');
         localStorage.removeItem('torahApp_remember');
-        document.getElementById('rememberKeys').checked = false;
-        alert('המפתחות השמורים נמחקו.');
     } catch (e) {}
+    const gk = document.getElementById('geminiApiKey');
+    const ck = document.getElementById('claudeApiKey');
+    if (gk) gk.value = '';
+    if (ck) ck.value = '';
+    const res = document.getElementById('testKeyResult');
+    if (res) { res.classList.add('hidden'); res.textContent = ''; }
+    expandApiKeySection();
+    try { updateApiKeyHint(); } catch (e) {}
+    alert('המפתח השמור נמחק מהדפדפן.');
+}
+
+// סעיף מפתח ה-API: מקופל כשיש מפתח שמור, פתוח כשאין.
+function initApiKeySection() {
+    const section = document.getElementById('apiKeySection');
+    if (!section) return;
+    const gk = document.getElementById('geminiApiKey');
+    const hasKey = gk && gk.value.trim().length > 10;
+    if (hasKey) collapseApiKeySection();
+    else expandApiKeySection();
+    updateApiKeyHint();
+}
+function collapseApiKeySection() {
+    const collapsed = document.getElementById('apiKeyCollapsed');
+    const expanded = document.getElementById('apiKeyExpanded');
+    if (!collapsed || !expanded) return;
+    // עדכון תג Claude במצב המקופל
+    const ck = document.getElementById('claudeApiKey');
+    const badge = document.getElementById('apiKeyClaudeBadge');
+    if (badge) badge.classList.toggle('hidden', !(ck && ck.value.trim().length > 10));
+    collapsed.classList.remove('hidden');
+    collapsed.classList.add('flex');
+    expanded.classList.add('hidden');
+}
+function expandApiKeySection() {
+    const collapsed = document.getElementById('apiKeyCollapsed');
+    const expanded = document.getElementById('apiKeyExpanded');
+    if (!collapsed || !expanded) return;
+    collapsed.classList.add('hidden');
+    collapsed.classList.remove('flex');
+    expanded.classList.remove('hidden');
+}
+function saveApiKeysAndCollapse() {
+    const gk = document.getElementById('geminiApiKey');
+    const key = gk ? gk.value.trim() : '';
+    if (key.length < 10) {
+        const hint = document.getElementById('apiKeySaveHint');
+        if (hint) hint.textContent = '⚠️ נא להזין מפתח Gemini תקין (חובה).';
+        if (gk) gk.focus();
+        return;
+    }
+    saveStoredKeys();
+    const hint = document.getElementById('apiKeySaveHint');
+    if (hint) hint.textContent = '✓ נשמר במכשיר זה.';
+    collapseApiKeySection();
+}
+// רמז קצר ליד כפתור השמירה — משוב חי בזמן הקלדה
+function updateApiKeyHint() {
+    const hint = document.getElementById('apiKeySaveHint');
+    if (!hint) return;
+    const gk = document.getElementById('geminiApiKey');
+    const key = gk ? gk.value.trim() : '';
+    if (!key) hint.textContent = '';
+    else if (key.length < 10) hint.textContent = 'המפתח נראה קצר מדי…';
+    else hint.textContent = '';
+}
+
+// =======================================================
+// v9: בדיקת מפתח אוטומטית ושקטה + מעבר אוטומטי למודל חינמי
+// המערכת בודקת את המפתח ברקע ומציגה ✓/❌. אם המפתח שייך
+// לחשבון ללא חיוב — והמודל שנבחר אינו זמין בו — המערכת
+// עוברת אוטומטית ל-gemini-2.5-flash (זמין חינם לכולם) ומעדכנת.
+// =======================================================
+const FREE_TIER_FALLBACK_MODEL = 'gemini-2.5-flash';
+let _autoKeyCheckTimer = null;
+
+// מציג את תוצאת הבדיקה האוטומטית בתיבת testKeyResult
+function showAutoKeyStatus(kind, html) {
+    const result = document.getElementById('testKeyResult');
+    if (!result) return;
+    const styles = {
+        checking: 'mt-2 text-xs p-2 rounded bg-blue-50 text-blue-800 border border-blue-200',
+        ok:       'mt-2 text-xs p-2 rounded bg-green-50 text-green-900 border border-green-300',
+        warn:     'mt-2 text-xs p-2 rounded bg-amber-50 text-amber-900 border border-amber-300',
+        error:    'mt-2 text-xs p-2 rounded bg-red-50 text-red-800 border border-red-300'
+    };
+    result.className = styles[kind] || styles.checking;
+    result.innerHTML = html;
+    result.classList.remove('hidden');
+}
+
+// בדיקה שקטה: מאמתת את המפתח, ואם צריך — מורידה למודל חינמי.
+// silent=true → לא מציג "בודק..." (לטעינת-דף שקטה); אחרת מציג משוב מלא.
+async function autoValidateGeminiKey(silent) {
+    const gk = document.getElementById('geminiApiKey');
+    const key = gk ? gk.value.trim() : '';
+    if (!key || key.length < 10) return; // אין מה לבדוק
+    if (!silent) showAutoKeyStatus('checking', 'בודק את המפתח מול שרתי Google…');
+    try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (!resp.ok || !data.models || data.models.length === 0) {
+            const errMsg = (data.error && data.error.message) || `קוד שגיאה ${resp.status}`;
+            showAutoKeyStatus('error', `❌ <strong>המפתח אינו תקין:</strong> ${errMsg}<br>` +
+                `<a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline">צור מפתח חדש ב-AI Studio</a>.`);
+            return;
+        }
+        // המפתח תקין — בודקים אם המודל שנבחר זמין בחשבון הזה
+        const available = data.models.map(m => (m.name || '').replace('models/', ''));
+        const sel = document.getElementById('geminiModel');
+        const fastSel = document.getElementById('geminiFastModel');
+        const chosen = sel ? sel.value : '';
+        const fallbackAvailable = available.includes(FREE_TIER_FALLBACK_MODEL);
+        const chosenAvailable = !chosen || available.includes(chosen);
+
+        if (!chosenAvailable && fallbackAvailable) {
+            // ככל הנראה חשבון ללא חיוב — המודל שנבחר (preview/pro) אינו זמין.
+            // מורידים אוטומטית למודל החינמי.
+            if (sel) sel.value = FREE_TIER_FALLBACK_MODEL;
+            // גם המודל המהיר — אם אינו זמין, מורידים אותו
+            if (fastSel && !available.includes(fastSel.value) && fallbackAvailable) {
+                fastSel.value = FREE_TIER_FALLBACK_MODEL;
+            }
+            try { updateCostEstimate(); } catch (e) {}
+            showAutoKeyStatus('warn',
+                `⚠️ <strong>המפתח תקין, אך נראה שהוא שייך לחשבון ללא חיוב.</strong><br>` +
+                `המודל <code>${chosen}</code> אינו זמין בחשבון זה, ולכן המערכת עברה אוטומטית ל-<strong>${FREE_TIER_FALLBACK_MODEL}</strong> — ` +
+                `מודל איכותי שזמין בחינם לכולם.<br>` +
+                `<span class="text-amber-700">כדי להשתמש במודלים מתקדמים יותר (כמו gemini-3.1-pro), צריך לחבר חשבון חיוב ב-Google Cloud. אפשר גם לבחור מודל אחר ידנית בהגדרות המודלים.</span>`);
+        } else if (!chosenAvailable && !fallbackAvailable) {
+            // מקרה נדיר — אפילו מודל הגיבוי לא זמין
+            showAutoKeyStatus('warn',
+                `⚠️ <strong>המפתח תקין</strong>, אך המודל שנבחר (<code>${chosen}</code>) אינו זמין בחשבון זה ` +
+                `וגם מודל הגיבוי אינו זמין. בחר ידנית מודל מהרשימה — נסה gemini-1.5-flash.`);
+        } else {
+            // הכל תקין
+            showAutoKeyStatus('ok', `✅ <strong>המפתח תקין</strong> — זוהו ${data.models.length} מודלים זמינים בחשבון.`);
+        }
+    } catch (e) {
+        // שגיאת רשת — בבדיקה שקטה לא מטרידים את המשתמש
+        if (!silent) {
+            showAutoKeyStatus('error', `❌ שגיאת רשת בבדיקת המפתח: ${e.message}<br>בדוק את החיבור לאינטרנט.`);
+        }
+    }
+}
+
+// בדיקה מושהית — נקראת תוך כדי הקלדה, מריצה בדיקה 2 שניות אחרי שמפסיקים
+function scheduleAutoKeyCheck() {
+    if (_autoKeyCheckTimer) clearTimeout(_autoKeyCheckTimer);
+    _autoKeyCheckTimer = setTimeout(() => {
+        try { autoValidateGeminiKey(false); } catch (e) {}
+    }, 2000);
+}
+
+// =======================================================
+// v9: שמירה אוטומטית של הפרויקט כל דקה
+// מגן מפני אובדן עבודה בקריסת דפדפן / רענון. משתמש במנגנון
+// commitActiveProject הקיים — שומר טקסט גולמי, ערוך, והגדרות.
+// =======================================================
+let _projectAutoSaveInterval = null;
+function startProjectAutoSaveInterval() {
+    if (_projectAutoSaveInterval) clearInterval(_projectAutoSaveInterval);
+    _projectAutoSaveInterval = setInterval(() => {
+        try {
+            if (typeof activeProject !== 'undefined' && activeProject) {
+                commitActiveProject();
+            }
+        } catch (e) { console.warn('שמירה אוטומטית נכשלה:', e); }
+    }, 60000); // כל 60 שניות
 }
 
 // =======================================================
@@ -2144,36 +2334,6 @@ function stopEditing() {
     stopPipeline();
     const btn = document.getElementById('stopEditBtn');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ עוצר...'; }
-}
-
-/**
- * enterEditOnlyMode — חושף את שלבי 2 ו-4 בלבד לעבודה ידנית עם תמלול קיים
- */
-function enterEditOnlyMode() {
-    ['anchorsSection', 'validationSection', 'qualityDashboard', 'chunksSection'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
-    });
-    document.getElementById('rawTranscriptSection').classList.remove('hidden');
-    document.getElementById('editingControlsSection').classList.remove('hidden');
-
-    // איפוס לוח העריכה — שלא יציג ערכים תקועים מריצה קודמת
-    const editDash = document.getElementById('editDashboard');
-    if (editDash) editDash.classList.add('hidden');
-    updateStat('editStatRawWords', 0);
-    updateStat('editStatEditedWords', 0);
-    updateStat('editStatRatio', '--');
-    updateStat('editStatProvider', '--');
-    const epb = document.getElementById('editProgressBar');
-    if (epb) epb.style.width = '0%';
-    const epl = document.getElementById('editProgressLabel');
-    if (epl) epl.textContent = '0%';
-
-    const ta = document.getElementById('rawTranscript');
-    ta.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    ta.focus();
-    // הצגת הודעה מנחה
-    showError('💡 מצב עריכה בלבד פעיל. הדבק או טען תמלול קיים לתיבה למעלה, ואז לחץ "בצע עריכה מתקדמת".');
-    setTimeout(() => hideError(), 8000);
 }
 
 /**
@@ -4629,6 +4789,9 @@ async function runChunkedTextEditing() {
         setInputsDisabledState(false);
     }
 }
+
+
+
 
 
 /* =======================================================
