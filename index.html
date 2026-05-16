@@ -9,16 +9,31 @@
     
     <title>שולחן עורך — ארגז הכלים לעורך התורני</title>
     <meta name="description" content="מערכת מתקדמת לתמלול, עריכה, זיהוי מקורות והוצאה לאור לעורך התורני. מבוססת מודלי שפה מתקדמים (Gemini ו-Claude).">
-    <meta property="og:title" content="שולחן עורך — ארגז הכלים לעורך התורני">
-    <meta property="og:description" content="ניהול תהליכים מקצועי לתמלול, הגהה והוצאה לאור. תמיכה בצ'אנקים ארוכים, מילון תורני מובנה, ואינטגרציה ל-Sefaria.">
-    <meta property="og:type" content="website">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="style.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="p-4 md:p-10 text-gray-800 gated">
+<body class="bg-slate-50 text-slate-800 p-4 md:p-8 font-sans antialiased gated">
 
     <div id="passwordGate">
         <div class="gate-overlay"></div>
@@ -34,19 +49,11 @@
                         </div>
                     </div>
                     <div class="gate-card-body">
-                        <p class="gate-description">הכנס סיסמה מאובטחת כדי לפתוח את ממשק העורך.</p>
                         <div class="gate-input-group">
                             <input type="password" id="gatePassword" placeholder="סיסמת גישה..." autocomplete="off" onkeydown="if(event.key==='Enter') checkGatePassword()">
-                            <span class="gate-input-icon">🔐</span>
                         </div>
-                        <button class="gate-button" onclick="checkGatePassword()" type="button">
-                            <span>כניסה</span>
-                            <span class="gate-button-arrow">→</span>
-                        </button>
+                        <button class="gate-button" onclick="checkGatePassword()" type="button">כניסה →</button>
                         <div class="gate-error" id="gateError"></div>
-                    </div>
-                    <div class="gate-card-footer">
-                        <p>גישה פרטית לתוכנה — ללא חסימה במרכז התמונה.</p>
                     </div>
                 </div>
             </div>
@@ -55,677 +62,207 @@
 
     <div class="max-w-6xl mx-auto app-shell">
 
-        <header class="app-header mb-6">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
             <div>
-                <div class="brand-pill">שולחן עורך</div>
-                <h1 class="app-title">ארגז כלים לעורך תורני</h1>
-                <p class="app-subtitle">ניהול תהליכים מקצועי לתמלול, הגהה והוצאה לאור — ממשק RTL מודרני עם דגש על דיוק ועבודה מהירה.</p>
+                <div class="inline-block bg-brand-100 text-brand-700 text-xs font-bold px-3 py-1 rounded-full mb-2">שולחן עורך v9</div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">ארגז כלים לעורך תורני</h1>
+                <p class="text-slate-500 mt-1">ניהול תהליכים מקצועי לתמלול, הגהה והוצאה לאור.</p>
             </div>
-            <div class="app-header-actions">
-                <div class="chips">
-                    <span class="status-chip">גרסה 9</span>
-                    <span class="status-chip accent">RTL מקצועי</span>
-                    <span class="status-chip subtle">עיצוב חד ונקי</span>
-                </div>
-                <div class="action-group">
-                    <button type="button" onclick="openProjectsModal()" class="ghost-btn">🗂️ פרויקטים</button>
-                    <button type="button" onclick="clickEnableNotifications()" class="ghost-btn">🔔 התראות</button>
-                </div>
+            <div class="mt-4 md:mt-0 flex gap-3">
+                <button type="button" onclick="openProjectsModal()" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition shadow-sm font-medium">
+                    🗂️ פרויקטים
+                </button>
+                <button type="button" onclick="clickEnableNotifications()" class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition shadow-sm font-medium">
+                    🔔 התראות
+                </button>
             </div>
         </header>
 
-        <section class="hero-panel mb-6">
-            <div class="hero-tag">חוויית עורך תורני פרימיום</div>
-            <div class="hero-grid">
-                <div>
-                    <h2>עיצוב מוקפד, זרימה מקצועית, תוצאה אמינה.</h2>
-                    <p>ניהול פרויקטים חכם, בחירות מודלים מאוזנות ותצוגות קלות לקריאה שמובילות למהירות ולדיוק. תחושת ממשק ייחודית שמרגישה כמו כלי עבודה מקצועי ולא כמו תבנית AI.</p>
-                </div>
-                <div class="hero-steps">
-                    <div class="hero-step"><span>1</span> הזן מפתח API</div>
-                    <div class="hero-step"><span>2</span> בחר מסלול עבודה</div>
-                    <div class="hero-step"><span>3</span> התחל ותוריד תוצאה</div>
-                </div>
+        <div class="flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
+            <span class="font-semibold text-slate-700">📁 פרויקט פעיל:</span>
+            <input id="pbName" class="flex-1 min-w-[200px] text-lg font-bold text-brand-600 bg-transparent border-b-2 border-transparent hover:border-slate-300 focus:border-brand-500 outline-none transition px-2 py-1" type="text" autocomplete="off" value="פרויקט חדש" spellcheck="false">
+            <span class="text-sm text-slate-400" id="pbMeta"></span>
+            <span class="text-emerald-600 text-sm font-medium flex-1 text-left" id="pbSaveStatus">✓ נשמר</span>
+            <div class="flex gap-2">
+                <button type="button" onclick="newProject(true)" class="text-sm px-3 py-1.5 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 transition">➕ חדש</button>
+                <button type="button" onclick="saveAsNewProject()" class="text-sm px-3 py-1.5 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 transition">📑 שמור כעותק</button>
             </div>
-        </section>
-
-        <div class="project-bar">
-            <span class="pb-label">📁 פרויקט:</span>
-            <input id="pbName" class="pb-name-input" type="text" autocomplete="off" value="פרויקט חדש" spellcheck="false" title="הקלד שם לפרויקט. השם נשמר אוטומטית בלחיצה מחוץ לשדה." aria-label="שם הפרויקט">
-            <span class="pb-meta" id="pbMeta"></span>
-            <span class="pb-spacer"></span>
-            <span class="pb-save-status saved" id="pbSaveStatus">✓ נשמר</span>
-            <button type="button" onclick="newProject(true)" title="צור פרויקט חדש וריק">➕ חדש</button>
-            <button type="button" onclick="saveAsNewProject()" title="שמור עותק כפרויקט נפרד">📑 שמור כעותק</button>
-            <button type="button" onclick="openProjectsModal()" title="פתח פרויקט קיים / נהל פרויקטים">🗂️ הפרויקטים שלי</button>
         </div>
 
-        <div class="tab-bar">
-            <button type="button" id="tabBtn-intake" class="tab-btn active" onclick="switchTab('intake')">
-                <span class="tab-step-num">1</span><span class="tab-icon">📥</span>קליטת חומר
+        <div class="flex gap-2 overflow-x-auto mb-6 bg-slate-200/50 p-1.5 rounded-xl border border-slate-200">
+            <button type="button" id="tabBtn-intake" class="tab-btn active flex-1 py-3 px-4 rounded-lg font-bold text-slate-600 hover:text-slate-900 hover:bg-white/60 transition" onclick="switchTab('intake')">
+                <span class="mr-2">📥</span> קליטת חומר
             </button>
-            <button type="button" id="tabBtn-editing" class="tab-btn" onclick="switchTab('editing')">
-                <span class="tab-step-num">2</span><span class="tab-icon">✏️</span>עריכה והגהה
+            <button type="button" id="tabBtn-editing" class="tab-btn flex-1 py-3 px-4 rounded-lg font-bold text-slate-600 hover:text-slate-900 hover:bg-white/60 transition" onclick="switchTab('editing')">
+                <span class="mr-2">✏️</span> עריכה והגהה
             </button>
-            <button type="button" id="tabBtn-sources" class="tab-btn" onclick="switchTab('sources')">
-                <span class="tab-step-num">3</span><span class="tab-icon">📚</span>מקורות
+            <button type="button" id="tabBtn-sources" class="tab-btn flex-1 py-3 px-4 rounded-lg font-bold text-slate-600 hover:text-slate-900 hover:bg-white/60 transition" onclick="switchTab('sources')">
+                <span class="mr-2">📚</span> מקורות
             </button>
-            <button type="button" id="tabBtn-publish" class="tab-btn" onclick="switchTab('publish')">
-                <span class="tab-step-num">4</span><span class="tab-icon">📖</span>הוצאה לאור
+            <button type="button" id="tabBtn-publish" class="tab-btn flex-1 py-3 px-4 rounded-lg font-bold text-slate-600 hover:text-slate-900 hover:bg-white/60 transition" onclick="switchTab('publish')">
+                <span class="mr-2">📖</span> הוצאה לאור
             </button>
         </div>
 
         <div id="tab-intake" class="tab-panel active">
 
-            <div id="apiKeySection" class="mb-6 rounded-xl border-2 border-amber-300 bg-gradient-to-l from-amber-50 to-orange-50">
-                <div id="apiKeyCollapsed" class="hidden items-center gap-3 p-3 px-5">
+            <div id="apiKeySection" class="mb-6 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div id="apiKeyCollapsed" class="hidden items-center gap-3 p-4 bg-slate-50 cursor-pointer hover:bg-slate-100 transition" onclick="expandApiKeySection()">
                     <span class="text-xl">🔑</span>
-                    <span class="font-semibold text-amber-900 text-sm">מפתח Gemini API מוגדר ונשמר במכשיר זה.</span>
-                    <span id="apiKeyClaudeBadge" class="hidden text-xs bg-amber-200 text-amber-800 px-2 py-0.5 rounded">+ Claude</span>
+                    <span class="font-semibold text-slate-700 text-sm">מפתחות API מוגדרים במערכת</span>
                     <span class="flex-1"></span>
-                    <button type="button" onclick="expandApiKeySection()" class="text-xs bg-white border border-amber-300 text-amber-800 px-3 py-1.5 rounded hover:bg-amber-100 font-semibold">✏️ שינוי / עדכון מפתח</button>
+                    <span class="text-sm text-brand-600 font-medium">ערוך מפתחות</span>
                 </div>
 
-                <div id="apiKeyExpanded" class="p-5">
-                    <h3 class="font-bold text-amber-900 mb-1 text-lg">🔑 מפתח API — צעד ראשון</h3>
-                    <p class="text-sm text-amber-800 mb-4">המפתח מוזן <strong>פעם אחת</strong> ונשמר במכשיר זה (בדפדפן בלבד). הוא משמש לכל פעולות הבינה המלאכותית — בין אם תבחר לתמלל הקלטה ובין אם לערוך טקסט קיים.</p>
-                    <div class="grid md:grid-cols-2 gap-5">
-                        <div class="bg-white p-4 rounded-lg border border-blue-200">
-                            <label class="block text-sm font-semibold mb-2 text-blue-900">🔵 מפתח Gemini API <span class="text-xs text-red-600">(חובה)</span></label>
-                            <div class="input-with-toggle">
-                                <input type="password" id="geminiApiKey" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="מתחיל ב-AIza...">
-                                <button type="button" id="geminiKeyToggle" class="api-key-toggle" onclick="toggleApiKeyVisibility('geminiApiKey','geminiKeyToggle')" aria-label="הצג או הסתר מפתח Gemini">👁️</button>
+                <div id="apiKeyExpanded" class="p-6">
+                    <h3 class="font-bold text-slate-800 mb-2 text-lg">🔑 חיבור מודלי שפה (API)</h3>
+                    <p class="text-sm text-slate-500 mb-6">המפתח נשמר באופן מאובטח בדפדפן המקומי בלבד.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                            <label class="block text-sm font-bold mb-2 text-slate-700">🔵 מפתח Gemini API <span class="text-red-500">*</span></label>
+                            <input type="password" id="geminiApiKey" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition" placeholder="AIza...">
+                            <div class="mt-3 flex items-center gap-3">
+                                <button type="button" onclick="testGeminiApiKey()" id="testKeyBtn" class="text-sm bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition shadow-sm font-medium">בדוק חיבור</button>
+                                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-sm text-brand-600 hover:text-brand-800 font-medium">קבל מפתח חינמי →</a>
                             </div>
-                            <div class="mt-2 flex items-center gap-2 flex-wrap">
-                                <button type="button" onclick="testGeminiApiKey()" id="testKeyBtn" class="text-xs bg-blue-100 text-blue-800 px-3 py-1.5 rounded hover:bg-blue-200 font-semibold">🔑 בדוק תקינות המפתח</button>
-                                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-blue-700 underline hover:text-blue-900">🔗 קבל מפתח חינמי מ-AI Studio</a>
-                            </div>
-                            <div id="testKeyResult" class="mt-2 text-xs hidden p-2 rounded"></div>
+                            <div id="testKeyResult" class="mt-2 text-sm hidden p-2 rounded"></div>
                         </div>
-                        <div class="bg-white p-4 rounded-lg border border-amber-200">
-                            <label class="block text-sm font-semibold mb-2 text-amber-900">🟠 מפתח Anthropic Claude <span class="text-xs text-gray-500">(אופציונלי)</span></label>
-                            <div class="input-with-toggle">
-                                <input type="password" id="claudeApiKey" class="w-full p-2 border rounded focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="sk-ant-...">
-                                <button type="button" id="claudeKeyToggle" class="api-key-toggle" onclick="toggleApiKeyVisibility('claudeApiKey','claudeKeyToggle')" aria-label="הצג או הסתר מפתח Claude">👁️</button>
-                            </div>
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                            <label class="block text-sm font-bold mb-2 text-slate-700">🟠 מפתח Claude API <span class="text-slate-400 font-normal">(אופציונלי)</span></label>
+                            <input type="password" id="claudeApiKey" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition" placeholder="sk-ant-...">
                         </div>
                     </div>
-                    <div class="mt-4 flex items-center gap-3 flex-wrap text-sm">
-                        <button type="button" onclick="saveApiKeysAndCollapse()" class="bg-amber-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-amber-700 transition">💾 שמור והמשך</button>
-                        <button type="button" onclick="clearStoredKeys()" class="text-xs bg-gray-200 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-300">🗑️ מחק מפתח שמור</button>
-                        <span id="apiKeySaveHint" class="text-xs text-amber-700"></span>
+                    <div class="mt-6 flex items-center gap-3">
+                        <button type="button" onclick="saveApiKeysAndCollapse()" class="bg-slate-900 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-slate-800 transition shadow-md">שמור נתונים</button>
+                        <button type="button" onclick="clearStoredKeys()" class="text-sm text-slate-500 hover:text-red-600 transition font-medium">מחק מפתחות</button>
                     </div>
                 </div>
             </div>
 
-            <div class="mb-6 p-5 bg-gradient-to-l from-blue-50 to-indigo-50 rounded-xl border-2 border-indigo-300">
-                <h3 class="font-bold text-indigo-900 mb-3 text-lg">▶️ במה נתחיל?</h3>
-                <div class="grid md:grid-cols-2 gap-3">
-                    <label class="route-card bg-white border border-gray-200 rounded-lg shadow-sm hover:border-indigo-400 cursor-pointer p-4 transition-all" id="routeCardAudio">
-                        <input type="radio" name="workMode" value="audio" checked onchange="switchWorkMode('audio')" class="route-radio hidden">
-                        <div class="route-card-body flex gap-4 items-start">
-                            <div class="route-card-icon text-3xl">🎙️</div>
+            <div class="mb-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-4 text-xl">במה נתחיל?</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <label class="cursor-pointer group relative" id="routeCardAudio">
+                        <input type="radio" name="workMode" value="audio" checked onchange="switchWorkMode('audio')" class="peer hidden">
+                        <div class="p-5 rounded-xl border-2 border-slate-200 peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:border-brand-300 transition-all flex gap-4 items-center">
+                            <div class="text-4xl bg-white p-3 rounded-lg shadow-sm border border-slate-100">🎙️</div>
                             <div>
-                                <div class="route-card-title text-gray-900 font-bold text-lg mb-1">תמלול אודיו</div>
-                                <div class="route-card-desc text-gray-700 text-sm leading-relaxed">העלה הקלטה — המערכת תתמלל, תבדוק, ותכין לעריכה.</div>
+                                <div class="font-bold text-slate-800 text-lg">תמלול אודיו</div>
+                                <div class="text-slate-500 text-sm mt-1">העלה הקלטה — המערכת תתמלל ותכין לעריכה.</div>
                             </div>
                         </div>
                     </label>
                     
-                    <label class="route-card bg-white border border-gray-200 rounded-lg shadow-sm hover:border-indigo-400 cursor-pointer p-4 transition-all" id="routeCardText">
-                        <input type="radio" name="workMode" value="text" onchange="switchWorkMode('text')" class="route-radio hidden">
-                        <div class="route-card-body flex gap-4 items-start">
-                            <div class="route-card-icon text-3xl">📄</div>
+                    <label class="cursor-pointer group relative" id="routeCardText">
+                        <input type="radio" name="workMode" value="text" onchange="switchWorkMode('text')" class="peer hidden">
+                        <div class="p-5 rounded-xl border-2 border-slate-200 peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:border-brand-300 transition-all flex gap-4 items-center">
+                            <div class="text-4xl bg-white p-3 rounded-lg shadow-sm border border-slate-100">📄</div>
                             <div>
-                                <div class="route-card-title text-gray-900 font-bold text-lg mb-1">עריכת טקסט קיים</div>
-                                <div class="route-card-desc text-gray-700 text-sm leading-relaxed">העלה Word, הדבק טקסט, או חלץ מתמונה — ישר לעריכה.</div>
+                                <div class="font-bold text-slate-800 text-lg">עריכת טקסט קיים</div>
+                                <div class="text-slate-500 text-sm mt-1">העלה קובץ, הדבק טקסט או סרוק תמונה.</div>
                             </div>
                         </div>
                     </label>
                 </div>
-            </div>
-
-            <div id="textRoutePanel" class="hidden mb-6 p-5 bg-gradient-to-l from-emerald-50 to-teal-50 rounded-xl border border-emerald-200">
-                <h3 class="font-bold text-emerald-800 mb-3 text-lg">📄 קליטת טקסט לעריכה</h3>
-                <div class="flex border-b mb-4">
-                    <div class="source-tab active" id="textTabPaste" onclick="switchTextInputTab('paste')">📋 הדבקת טקסט</div>
-                    <div class="source-tab" id="textTabFile" onclick="switchTextInputTab('file')">📎 קובץ Word / טקסט</div>
-                    <div class="source-tab" id="textTabImage" onclick="switchTextInputTab('image')">🖼️ תמונה (OCR)</div>
-                </div>
-                <div id="textPastePanel">
-                    <textarea id="pastedTextInput" class="w-full h-48 p-3 border rounded bg-white text-sm leading-relaxed resize-y focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="הדבק כאן קטע טקסט תורני לעריכה..."></textarea>
-                    <div id="pastedTextInfo" class="text-xs text-gray-600 mt-1"></div>
-                </div>
-                <div id="textFilePanel" class="hidden">
-                    <input type="file" id="textFileInput" accept=".docx,.txt,.md" class="w-full p-2 border rounded bg-white" onchange="loadTextFileForEditing(event)">
-                    <div id="textFileInfo" class="text-xs text-gray-600 mt-1"></div>
-                </div>
-                <div id="textImagePanel" class="hidden">
-                    <input type="file" id="ocrImageInput" accept="image/*" class="w-full p-2 border rounded bg-white" onchange="loadOcrImage(event)">
-                    <div id="ocrImageInfo" class="text-xs text-gray-600 mt-1"></div>
-                    <button id="runOcrBtn" onclick="runImageOcr()" class="mt-2 bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 transition disabled:bg-gray-400" disabled>🔍 חלץ טקסט מהתמונה</button>
-                    <div id="ocrStatus" class="hidden mt-2 text-sm font-semibold text-purple-700 flex items-center bg-purple-100 p-3 rounded-lg border border-purple-300">
-                        <div class="loader" style="border-top-color: #7c3aed;"></div><span class="pulse-text" id="ocrStatusText">מחלץ טקסט...</span>
-                    </div>
-                </div>
-                <div id="textChunkInfo" class="hidden mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800"></div>
-                <button id="loadTextBtn" onclick="loadTextIntoEditor()" class="w-full mt-4 bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-emerald-700 transition disabled:bg-gray-400">
-                    ✏️ טען לעריכה
-                </button>
             </div>
 
             <div id="audioRouteSections">
                 
-                <details class="mb-6 bg-white border border-gray-300 rounded-xl shadow-sm group">
-                    <summary class="cursor-pointer font-bold text-gray-800 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition flex justify-between items-center list-none outline-none focus:ring-2 focus:ring-blue-500">
-                        <span class="flex items-center gap-2">⚙️ הגדרות מתקדמות (מודלים, מהירות, צ'אנקים ומילון)</span>
-                        <span class="text-gray-500 font-normal text-sm">הצג/הסתר</span>
+                <details class="mb-6 bg-white border border-slate-200 rounded-xl shadow-sm group">
+                    <summary class="cursor-pointer font-bold text-slate-800 p-5 rounded-xl hover:bg-slate-50 transition flex justify-between items-center list-none outline-none">
+                        <span class="flex items-center gap-3"><span class="text-xl">⚙️</span> הגדרות מתקדמות (מודלים, מהירות וצ'אנקים)</span>
+                        <span class="text-slate-400 font-normal text-sm transform group-open:rotate-180 transition-transform">▼</span>
                     </summary>
                     
-                    <div class="p-5 border-t border-gray-200 space-y-6">
-                        <div class="p-5 bg-gradient-to-l from-slate-50 to-blue-50 rounded-xl border border-slate-200">
-                            <h3 class="font-bold text-slate-700 mb-3 text-lg">⚙️ הגדרות מודלים וספקים</h3>
-                            <div class="grid md:grid-cols-2 gap-5">
-                                <div class="bg-white p-4 rounded-lg border border-blue-100">
-                                    <label class="block text-sm font-semibold mb-2 text-blue-900">🎯 מודל ראשי:</label>
-                                    <select id="geminiModel" class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-blue-500 outline-none text-left text-sm" dir="ltr">
-                                        <option value="gemini-3.1-pro-preview" selected>gemini-3.1-pro-preview ⭐ (החדש ביותר)</option>
-                                        <option value="gemini-2.5-pro">gemini-2.5-pro 🛡️ (יציב במיוחד)</option>
-                                        <option value="gemini-3-flash">gemini-3-flash (חדש, מאוזן)</option>
-                                        <option value="gemini-2.5-flash">gemini-2.5-flash (מהיר)</option>
-                                    </select>
-                                    <label class="block text-sm font-semibold mt-3 mb-2 text-blue-900">⚡ מודל מהיר לעזר:</label>
-                                    <select id="geminiFastModel" class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-blue-500 outline-none text-left text-sm" dir="ltr">
-                                        <option value="gemini-2.5-flash" selected>gemini-2.5-flash ⭐ (מומלץ)</option>
-                                        <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite</option>
+                    <div class="p-6 border-t border-slate-100 space-y-6 bg-slate-50/50 rounded-b-xl">
+                        
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-4">🧠 מודלים וספקים</h3>
+                            <div class="grid md:grid-cols-2 gap-5 mb-4">
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2 text-slate-700">מודל ראשי (Gemini):</label>
+                                    <select id="geminiModel" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-left bg-slate-50">
+                                        <option value="gemini-3.1-pro-preview" selected>gemini-3.1-pro-preview ⭐</option>
+                                        <option value="gemini-2.5-pro">gemini-2.5-pro</option>
                                     </select>
                                 </div>
-                                <div class="bg-white p-4 rounded-lg border border-amber-200">
-                                    <label class="block text-sm font-semibold mb-2 text-amber-900">מודל Claude:</label>
-                                    <select id="claudeModel" class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-amber-500 outline-none text-left text-sm" dir="ltr">
-                                        <option value="claude-opus-4-5" selected>claude-opus-4-5 (החזק ביותר)</option>
+                                <div>
+                                    <label class="block text-sm font-semibold mb-2 text-slate-700">מודל לעריכה (Claude):</label>
+                                    <select id="claudeModel" class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-left bg-slate-50">
+                                        <option value="claude-opus-4-5" selected>claude-opus-4-5</option>
                                         <option value="claude-sonnet-4-5">claude-sonnet-4-5</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="mt-4 p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-                                <label class="block text-sm font-semibold mb-2 text-indigo-900">🧠 ספק לשלבי עריכת טקסט:</label>
-                                <div class="flex flex-wrap gap-3">
-                                    <label class="flex items-center cursor-pointer bg-white p-2 px-4 rounded border"><input type="radio" name="textProvider" value="gemini" checked class="ml-2"> Gemini בלבד</label>
-                                    <label class="flex items-center cursor-pointer bg-white p-2 px-4 rounded border"><input type="radio" name="textProvider" value="claude" class="ml-2"> Claude לעריכה</label>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-4">⚡ מצב מהירות וזרימה</h3>
+                            <div class="flex flex-wrap gap-3 mb-4">
+                                <div class="px-4 py-2 rounded-lg border-2 border-slate-200 text-slate-600 font-semibold cursor-pointer hover:border-brand-400 transition" onclick="applySpeedProfile('express', event)">🚀 Express</div>
+                                <div class="px-4 py-2 rounded-lg border-2 border-slate-200 text-slate-600 font-semibold cursor-pointer hover:border-brand-400 transition" onclick="applySpeedProfile('turbo', event)">⚡ טורבו</div>
+                                <div class="px-4 py-2 rounded-lg border-2 border-brand-500 bg-brand-50 text-brand-700 font-bold cursor-pointer transition" onclick="applySpeedProfile('balanced', event)">⚖️ מאוזן</div>
+                                <div class="px-4 py-2 rounded-lg border-2 border-slate-200 text-slate-600 font-semibold cursor-pointer hover:border-brand-400 transition" onclick="applySpeedProfile('max', event)">🎯 דיוק מקסימלי</div>
+                            </div>
+                            <div class="flex gap-4 text-sm text-slate-700">
+                                <label class="flex items-center gap-2"><input type="checkbox" id="skipAnchors" class="rounded text-brand-600"> דלג על שלב עוגנים</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" id="skipValidation" class="rounded text-brand-600"> דלג על בדיקת ולידציה</label>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 class="font-bold text-slate-800 mb-4">🧩 הגדרות חיתוך (Chunks)</h3>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm text-slate-600 mb-1">משך צ'אנק:</label>
+                                    <select id="chunkDurationMinutes" class="w-full p-2 border border-slate-300 rounded-lg bg-slate-50"><option value="10" selected>10 דקות</option></select>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="p-5 bg-gradient-to-l from-yellow-50 to-orange-50 rounded-xl border border-orange-200">
-                            <h3 class="font-bold text-orange-800 mb-3 text-lg">🎚️ מצב מהירות וזרימה</h3>
-                            <div class="mb-3">
-                                <p class="text-sm font-semibold mb-2 text-orange-900">בחר פרופיל מהיר:</p>
-                                <div class="flex flex-wrap gap-2">
-                                    <div class="speed-pill" onclick="applySpeedProfile('express', event)">🚀 Express</div>
-                                    <div class="speed-pill" onclick="applySpeedProfile('turbo', event)">⚡⚡ טורבו</div>
-                                    <div class="speed-pill active" onclick="applySpeedProfile('balanced', event)">⚖️ מאוזן</div>
-                                    <div class="speed-pill" onclick="applySpeedProfile('max', event)">🎯 דיוק מקסימלי</div>
+                                <div>
+                                    <label class="block text-sm text-slate-600 mb-1">חפיפה (Overlap):</label>
+                                    <select id="chunkOverlapSeconds" class="w-full p-2 border border-slate-300 rounded-lg bg-slate-50"><option value="20" selected>20 שניות</option></select>
                                 </div>
-                            </div>
-                            <div class="grid md:grid-cols-2 gap-2">
-                                <label class="skip-toggle"><input type="checkbox" id="skipAnchors"> דלג על שלב 1 (עוגנים)</label>
-                                <label class="skip-toggle"><input type="checkbox" id="skipValidation"> דלג על שלב 3 (ולידציה)</label>
-                            </div>
-                        </div>
-
-                        <div class="p-5 bg-gradient-to-l from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200">
-                            <h3 class="font-bold text-violet-800 mb-3 text-lg">🧩 מצב כיסוי — צ'אנקים</h3>
-                            <div class="flex flex-wrap gap-2 mb-3" id="coverageModePills">
-                                <div class="lang-mode-pill" data-mode="single" onclick="applyCoverageMode('single')">📜 קריאה אחת</div>
-                                <div class="lang-mode-pill active" data-mode="auto" onclick="applyCoverageMode('auto')">🤖 אוטומטי</div>
-                                <div class="lang-mode-pill" data-mode="chunked" onclick="applyCoverageMode('chunked')">🧩 צ'אנקים תמיד</div>
-                            </div>
-                            <div class="grid md:grid-cols-2 gap-3 mb-3">
-                                <div><label class="text-sm">משך צ'אנק (דקות):</label><select id="chunkDurationMinutes" class="w-full p-2 border rounded"><option value="10" selected>10 דקות</option><option value="15">15 דקות</option></select></div>
-                                <div><label class="text-sm">חפיפה (שניות):</label><select id="chunkOverlapSeconds" class="w-full p-2 border rounded"><option value="20" selected>20 שניות</option><option value="0">0</option></select></div>
-                            </div>
-                            <div class="pt-3 border-t border-violet-200 grid md:grid-cols-2 gap-2 text-xs">
-                                <label class="flex items-start bg-white p-2 border rounded"><input type="checkbox" id="optAudioPreprocess" checked class="ml-2"><span>🔊 עיבוד אודיו (High-pass)</span></label>
-                                <label class="flex items-start bg-white p-2 border rounded"><input type="checkbox" id="optSilenceAlign" checked class="ml-2"><span>✂️ ישר גבולות לשתיקות</span></label>
-                                <label class="flex items-start bg-white p-2 border rounded"><input type="checkbox" id="optChunkContext" checked class="ml-2"><span>🔗 הקשר בין צ'אנקים</span></label>
-                                <label class="flex items-start bg-white p-2 border rounded"><input type="checkbox" id="optSpeakerDiarization" class="ml-2"><span>🎤 זיהוי דוברים</span></label>
-                                <label class="flex items-start bg-white p-2 border rounded"><input type="checkbox" id="optStopOnChunkFail" class="ml-2"><span>🛑 עצור בכישלון צ'אנק</span></label>
-                            </div>
-                        </div>
-
-                        <div class="p-5 bg-gradient-to-l from-cyan-50 to-blue-50 rounded-xl border border-cyan-200">
-                            <h3 class="font-bold text-cyan-800 mb-2 text-lg">💰 הערכת טוקנים ועלות</h3>
-                            <div id="costEstimateBlock" class="text-sm text-gray-700">הזן מפתח וקובץ להערכה.</div>
-                            <details class="mt-2 text-xs text-cyan-700">
-                                <summary class="cursor-pointer font-semibold">⚙️ מחירון ידני</summary>
-                                <div class="grid grid-cols-4 gap-2 mt-2">
-                                    <input type="number" id="priceProIn" value="1.25" class="w-full p-1 border rounded">
-                                    <input type="number" id="priceProOut" value="10.00" class="w-full p-1 border rounded">
-                                    <input type="number" id="priceFlashIn" value="0.30" class="w-full p-1 border rounded">
-                                    <input type="number" id="priceFlashOut" value="2.50" class="w-full p-1 border rounded">
-                                </div>
-                            </details>
-                        </div>
-
-                        <div class="p-5 bg-gradient-to-l from-amber-50 to-yellow-50 rounded-xl border border-amber-200">
-                            <h3 class="font-bold text-amber-800 mb-2 text-lg">📚 מילון תורני</h3>
-                            <div class="grid md:grid-cols-3 gap-3">
-                                <label class="skip-toggle"><input type="checkbox" id="useBuiltinGlossary" checked> מילון מובנה</label>
-                                <label class="skip-toggle"><input type="checkbox" id="useTalmudicContext" checked> הבהרה ישיבתית</label>
-                                <label class="skip-toggle"><input type="checkbox" id="useStrictAnchors" checked> חיזוק עוגנים</label>
                             </div>
                         </div>
                     </div>
                 </details>
 
-                <div class="mb-6 p-5 bg-gradient-to-l from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 shadow-sm">
-                    <h3 class="font-bold text-emerald-800 mb-3 text-lg">🎙️ מקור השמע (חובה)</h3>
-                    <div class="flex border-b mb-4">
-                        <div class="source-tab active" id="tabFile" onclick="switchSourceTab('file')">📁 קובץ מקומי</div>
-                        <div class="source-tab" id="tabYoutube" onclick="switchSourceTab('youtube')">📺 קישור YouTube</div>
+                <div class="mb-8 p-6 bg-white rounded-xl border border-slate-200 shadow-md">
+                    <h3 class="font-bold text-slate-800 mb-4 text-xl">🎙️ בחירת מקור שמע <span class="text-red-500 text-sm">*</span></h3>
+                    
+                    <div class="flex gap-2 border-b border-slate-200 mb-6 pb-2">
+                        <button class="px-4 py-2 font-bold text-brand-600 border-b-2 border-brand-600" id="tabFile" onclick="switchSourceTab('file')">📁 קובץ מקומי</button>
+                        <button class="px-4 py-2 font-semibold text-slate-500 hover:text-slate-800" id="tabYoutube" onclick="switchSourceTab('youtube')">📺 קישור YouTube</button>
                     </div>
+
                     <div id="fileSourcePanel">
-                        <label class="block text-sm font-semibold mb-2">בחר קובץ שמע (עד 20MB מומלץ):</label>
-                        <input type="file" id="audioFile" accept="audio/*" class="w-full p-2 border rounded bg-white focus:ring-2 focus:ring-emerald-500">
-                        <div id="audioFileInfo" class="text-xs text-gray-600 mt-1"></div>
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="document.getElementById('audioFile').click()">
+                            <div class="text-4xl mb-2">📁</div>
+                            <p class="font-bold text-slate-700">לחץ לבחירת קובץ שמע</p>
+                            <p class="text-sm text-slate-500 mt-1">תומך ב-MP3, WAV, M4A (מומלץ עד 20MB)</p>
+                            <input type="file" id="audioFile" accept="audio/*" class="hidden">
+                        </div>
+                        <div id="audioFileInfo" class="text-sm text-brand-600 font-semibold mt-3 text-center"></div>
                     </div>
+
                     <div id="youtubeSourcePanel" class="hidden">
-                        <label class="block text-sm font-semibold mb-2">קישור YouTube ישיר:</label>
-                        <input type="url" id="youtubeUrl" class="w-full p-2 border rounded bg-white" placeholder="https://www.youtube.com/watch?v=...">
+                        <label class="block text-sm font-bold mb-2 text-slate-700">הדבק קישור YouTube:</label>
+                        <input type="url" id="youtubeUrl" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none" placeholder="https://www.youtube.com/watch?v=...">
                     </div>
-                    <label class="block text-sm font-semibold mt-4 mb-2">הנחיות מיוחדות לתמלול (אופציונלי):</label>
-                    <textarea id="customTranscriptionPrompt" class="w-full p-2 border rounded bg-white text-sm focus:ring-2 focus:ring-emerald-500 outline-none" rows="2" placeholder="לדוגמה: הקפד על מושגים מהלכות שבת."></textarea>
-                </div>
 
-                <div id="costBanner" class="hidden mb-2 flex items-center justify-between gap-3 p-3 px-4 rounded-xl border-2 border-cyan-300 bg-gradient-to-l from-cyan-50 to-blue-50">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xl">💰</span>
-                        <span class="text-sm text-cyan-900" id="costBannerText">בחר קובץ כדי לראות הערכת עלות.</span>
-                    </div>
-                    <div class="text-left">
-                        <div class="text-lg font-bold text-cyan-800" id="costBannerTotal">—</div>
-                        <div class="text-[0.65rem] text-cyan-600 leading-none">צפי עלות כוללת</div>
+                    <div class="mt-6">
+                        <label class="block text-sm font-bold mb-2 text-slate-700">הנחיות מיוחדות לתמלול (אופציונלי):</label>
+                        <textarea id="customTranscriptionPrompt" class="w-full p-3 border border-slate-300 rounded-lg bg-slate-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition" rows="2" placeholder="לדוגמה: הקפד על מושגי קבלה או שמות ספציפיים..."></textarea>
                     </div>
                 </div>
 
-                <div class="grid md:grid-cols-3 gap-2">
-                    <button id="startPipelineBtn" onclick="runFullPipeline()" class="md:col-span-3 bg-gradient-to-l from-blue-700 to-indigo-700 text-white font-bold py-4 px-4 rounded-xl hover:from-blue-800 hover:to-indigo-800 transition disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg text-lg">
-                        🚀 התחל צינור עיבוד מלא
-                    </button>
-                </div>
+                <button id="startPipelineBtn" onclick="runFullPipeline()" class="w-full bg-slate-900 text-white font-bold py-4 px-6 rounded-xl hover:bg-slate-800 transition shadow-lg text-xl flex justify-center items-center gap-3">
+                    <span>🚀</span> התחל עיבוד ולמידה
+                </button>
 
-                <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                    <button id="notifPermBtn" onclick="clickEnableNotifications()" class="bg-blue-100 text-blue-800 font-semibold py-2 px-4 rounded hover:bg-blue-200 transition disabled:opacity-60">
-                        🔔 הפעל התראות שולחן-עבודה
-                    </button>
-                    <span id="notifStatus" class="text-xs text-gray-600"></span>
-                </div>
-                <input type="file" id="editOnlyFileInput" accept=".txt,.md,.doc,.docx,.html" class="hidden" onchange="loadTranscriptFromFile(event)">
-
-                <div id="pipelineStatus" class="mt-4 text-sm font-semibold text-blue-700 hidden flex items-center bg-blue-50 p-3 rounded-lg border border-blue-200" aria-live="polite" role="status">
-                    <div class="loader"></div>
-                    <span id="pipelineStatusText" class="pulse-text flex-1">המערכת מתחילה את הצינור...</span>
-                    <span id="pipelineTimer" class="timer mr-3">00:00</span>
-                    <button id="stopBtn" onclick="stopPipeline()" class="mr-3 bg-red-600 text-white px-4 py-1.5 rounded text-sm font-bold hover:bg-red-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed">⏹️ עצור</button>
-                </div>
-
-                <div id="loopAlertContainer"></div>
-                <div id="errorMsg" class="mt-4 p-3 bg-red-50 border-r-4 border-red-500 text-sm font-semibold text-red-700 hidden rounded leading-relaxed" aria-live="assertive" role="alert"></div>
-
-                <div id="qualityDashboard" class="stage-card mt-6 hidden p-5 rounded-xl bg-slate-50">
-                    <h2 class="text-xl font-bold text-slate-800 mb-3">📊 לוח בקרת שלמות התמלול</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
-                        <div class="stat-card" id="statDuration"><div class="stat-value" id="statDurationVal">--</div><div class="stat-label">משך השמע</div></div>
-                        <div class="stat-card" id="statExpected"><div class="stat-value" id="statExpectedVal">--</div><div class="stat-label">צפי מילים</div></div>
-                        <div class="stat-card" id="statActual"><div class="stat-value" id="statActualVal">0</div><div class="stat-label">מילים בפועל</div></div>
-                        <div class="stat-card" id="statRatio"><div class="stat-value" id="statRatioVal">--</div><div class="stat-label">יחס כיסוי</div></div>
-                        <div class="stat-card" id="statLoops"><div class="stat-value" id="statLoopsVal">0</div><div class="stat-label">לולאות שזוהו</div></div>
-                    </div>
-                    <div class="mb-2 text-xs text-gray-600 flex justify-between"><span>התקדמות משוערת</span><span id="progressLabel">0%</span></div>
-                    <div class="progress-bar-bg"><div id="progressBar" class="progress-bar-fill" style="width: 0%"></div></div>
-                    <div id="qualityVerdict" class="mt-3 p-3 rounded-lg text-sm hidden"></div>
-                </div>
-
-                <div id="chunksSection" class="stage-card mt-6 hidden p-5 rounded-xl bg-violet-50">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl font-bold text-violet-900">🧩 התקדמות צ'אנקים</h2>
-                        <div class="text-sm text-violet-800">
-                            <span id="chunksCompletedLabel">0</span>/<span id="chunksTotalLabel">0</span>
-                            <span class="mx-2">·</span>
-                            <span id="chunksDurationLabel">--</span>
-                        </div>
-                    </div>
-                    <div id="chunksContainer"></div>
-                    <div id="retryChunksContainer" class="hidden mt-3 p-3 bg-red-50 border border-red-300 rounded-lg">
-                        <p id="retryChunksLabel" class="text-sm text-red-800 mb-2 font-semibold"></p>
-                        <button id="retryFailedChunksBtn" onclick="retryFailedChunks()" class="bg-red-600 text-white font-semibold py-2 px-4 rounded hover:bg-red-700 transition disabled:bg-gray-400">🔧 נסה שוב צ'אנקים שנכשלו</button>
-                    </div>
-                </div>
-
-                <div id="anchorsSection" class="stage-card mt-6 hidden p-5 rounded-xl bg-purple-50">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl font-bold text-purple-900"><span class="stage-badge bg-purple-600 text-white">שלב 1</span> 🪝 עוגנים תורניים</h2>
-                        <button onclick="copyToClipboard('anchorsTextarea')" class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded hover:bg-purple-200">העתק</button>
-                    </div>
-                    <div id="anchorsChips" class="mb-3 min-h-[40px] p-3 bg-white rounded border border-purple-200"></div>
-                    <textarea id="anchorsTextarea" class="w-full h-32 p-3 border rounded bg-white text-sm leading-relaxed resize-y focus:ring-2 focus:ring-purple-500 outline-none"></textarea>
-                </div>
-
-                <div id="rawTranscriptSection" class="stage-card mt-6 hidden p-5 rounded-xl bg-blue-50">
-                    <h2 class="text-xl font-bold mb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-blue-900">
-                        <span><span class="stage-badge bg-blue-600 text-white">שלב 2</span> 📝 תמלול נאמן</span>
-                        <div class="flex gap-2 flex-wrap">
-                            <button id="toggleTs_rawTranscript" onclick="toggleTimestampsView('rawTranscript')" class="text-sm bg-indigo-100 text-indigo-800 px-3 py-1 rounded hover:bg-indigo-200">🕐 הסתר סימוני זמן</button>
-                            <button onclick="document.getElementById('editOnlyFileInput').click()" class="text-sm bg-purple-100 text-purple-800 px-3 py-1 rounded hover:bg-purple-200">📎 טען מקובץ</button>
-                            <button onclick="downloadWord('rawTranscript', 'תמלול_גולמי', false)" class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded hover:bg-blue-200">הורד Word</button>
-                            <button onclick="copyToClipboard('rawTranscript')" class="text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300">העתק</button>
-                        </div>
-                    </h2>
-                    <div id="rawNavView" class="hidden w-full h-72 p-4 border rounded bg-white text-base leading-relaxed overflow-auto" dir="rtl"></div>
-                    <textarea id="rawTranscript" class="w-full h-72 p-4 border rounded bg-white text-base leading-relaxed resize-y focus:ring-2 focus:ring-blue-500 outline-none" placeholder="כאן יופיע התמלול הגולמי..."></textarea>
-
-                    <div id="rawAudioNavBar" class="hidden mt-2 flex flex-wrap items-center gap-2 p-2 bg-sky-50 border border-sky-200 rounded">
-                        <button id="toggleNavViewBtn" onclick="toggleNavView('raw')" class="text-sm bg-sky-600 text-white px-3 py-1.5 rounded hover:bg-sky-700">🔊 תצוגת ניווט (לחיצה=השמעה)</button>
-                        <audio id="navAudioPlayer" controls class="flex-1 max-w-md" style="height: 32px;"></audio>
-                        <span class="text-xs text-sky-700" id="navHelpText">לחץ על מילה כדי לשמוע את הקטע.</span>
-                    </div>
-
-                    <div class="mt-3 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                        <div class="flex flex-col md:flex-row gap-2 mb-3">
-                            <button id="verifyCompleteBtn" onclick="startVerifyCompleteness()" class="flex-1 bg-indigo-600 text-white font-semibold py-2 px-4 rounded hover:bg-indigo-700 transition disabled:bg-gray-400">🔍 בדיקת שלמות מעמיקה</button>
-                            <button id="forceContinueBtn" onclick="forceContinueTranscription()" class="flex-1 bg-orange-500 text-white font-semibold py-2 px-4 rounded hover:bg-orange-600 transition disabled:bg-gray-400">⚡ המשך מאולץ</button>
-                        </div>
-                        <div id="verifyCompleteStatus" class="text-sm font-semibold text-indigo-700 hidden flex items-center">
-                            <div class="loader" style="border-top-color: #4f46e5;"></div><span class="pulse-text" id="verifyActionText">מבצע פעולה...</span>
-                        </div>
-                        <textarea id="verifyCompleteResult" class="w-full mt-2 h-24 p-2 border border-indigo-200 rounded bg-white text-sm hidden resize-y outline-none" readonly></textarea>
-                        <div id="completenessFixContainer" class="mt-2 hidden">
-                            <button id="fixCompletenessBtn" onclick="fixCompletenessIssues()" class="w-full bg-indigo-700 text-white font-semibold py-2 px-4 rounded hover:bg-indigo-800 transition disabled:bg-gray-400">🔧 תקן את החוסרים שזוהו</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div> </div> <div id="tab-editing" class="tab-panel">
-            <div id="validationSection" class="stage-card mt-6 hidden p-5 rounded-xl bg-amber-50">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-xl font-bold text-amber-900"><span class="stage-badge bg-amber-600 text-white">שלב 3</span> 🛡️ ולידציה מקבילה</h2>
-                    <button onclick="copyToClipboard('validationTextarea')" class="text-sm bg-amber-100 text-amber-800 px-3 py-1 rounded hover:bg-amber-200">העתק</button>
-                </div>
-                <textarea id="validationTextarea" class="w-full h-40 p-3 border rounded bg-white text-sm leading-relaxed resize-y focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
-                <div id="validationFixContainer" class="mt-3 hidden">
-                    <button id="applyValidationFixesBtn" onclick="applyValidationFixes()" class="w-full bg-amber-600 text-white font-semibold py-2 px-4 rounded hover:bg-amber-700 transition disabled:bg-gray-400">🔧 החל את התיקונים שזוהו על התמלול הגולמי</button>
-                    <div id="applyValidationFixesStatus" class="mt-2 text-sm font-semibold text-amber-700 hidden flex items-center">
-                        <div class="loader" style="border-top-color: #d97706;"></div><span class="pulse-text">מחיל את התיקונים...</span>
-                    </div>
-                </div>
             </div>
-
-            <div id="editingControlsSection" class="stage-card mt-6 hidden p-5 rounded-xl bg-green-50">
-                <h2 class="text-xl font-bold mb-3 text-green-900"><span class="stage-badge bg-green-600 text-white">שלב 4</span> ✏️ עריכה מתקדמת</h2>
-                <div class="bg-white p-4 rounded-lg border border-green-200 mb-3">
-                    <p class="font-semibold text-green-800 mb-2 text-sm">🎚️ עוצמת העריכה:</p>
-                    <div class="bg-gradient-to-l from-emerald-50 via-yellow-50 to-orange-50 border border-emerald-200 rounded p-3 mb-3">
-                        <input type="range" id="editIntensity" min="1" max="5" value="2" class="w-full" oninput="onEditIntensityChange()">
-                        <div class="flex justify-between text-xs text-gray-700 mt-1 px-1">
-                            <span>1 גהה</span><span>2 מינימלי</span><span>3 סטנדרטי</span><span>4 מעובד</span><span>5 סגנוני</span>
-                        </div>
-                        <p id="editIntensityDescription" class="text-xs text-gray-700 mt-2 leading-relaxed"></p>
-                    </div>
-
-                    <p class="font-semibold text-green-800 mb-1 text-sm">✍️ סגנון:</p>
-                    <div class="grid md:grid-cols-3 gap-2 text-xs mb-3">
-                        <label class="flex items-center bg-white border rounded p-2 cursor-pointer hover:border-green-400"><input type="radio" name="editStyle" value="yeshivish" checked class="ml-2"> ישיבתי-מסורתי</label>
-                        <label class="flex items-center bg-white border rounded p-2 cursor-pointer hover:border-green-400"><input type="radio" name="editStyle" value="halachic" class="ml-2"> הלכתי-פסיקתי</label>
-                        <label class="flex items-center bg-white border rounded p-2 cursor-pointer hover:border-green-400"><input type="radio" name="editStyle" value="iyun" class="ml-2"> עיוני-לימדני</label>
-                        <label class="flex items-center bg-white border rounded p-2 cursor-pointer hover:border-green-400"><input type="radio" name="editStyle" value="drasha" class="ml-2"> דרשני-אגדי</label>
-                        <label class="flex items-center bg-white border rounded p-2 cursor-pointer hover:border-green-400"><input type="radio" name="editStyle" value="accessible" class="ml-2"> נגיש לציבור רחב</label>
-                        <label class="flex items-center bg-white border rounded p-2 cursor-pointer hover:border-green-400"><input type="radio" name="editStyle" value="journalistic" class="ml-2"> עיתונאי</label>
-                    </div>
-
-                    <details class="text-xs text-gray-700 mb-3">
-                        <summary class="cursor-pointer text-green-700 font-semibold">📏 מגבלת אורך (אופציונלי)</summary>
-                        <div class="mt-2 grid md:grid-cols-2 gap-2">
-                            <label class="flex items-center"><input type="checkbox" id="optLengthLimit" class="ml-2"> הגבל מספר מילים בפלט:</label>
-                            <input type="number" id="optMaxWords" placeholder="לדוגמה: 2000" class="p-1 border rounded text-sm">
-                        </div>
-                    </details>
-
-                    <p class="font-semibold text-green-800 mb-2 text-sm">⚙️ תוספות-פלט (לא משפיעות על שימור התוכן):</p>
-                    <div class="grid md:grid-cols-2 gap-2 text-sm">
-                        <label class="flex items-center"><input type="checkbox" id="optStructuredMode" class="ml-2"> 📑 הוסף כותרת ראשית וכותרות משנה</label>
-                        <label class="flex items-center"><input type="checkbox" id="optShortParagraphs" class="ml-2"> חלוקה לפסקאות קצרות</label>
-                        <label class="flex items-center"><input type="checkbox" id="optNiqqudVerses" checked class="ml-2"> ניקוד לפסוקי תנ"ך מצוטטים</label>
-                        <label class="flex items-center"><input type="checkbox" id="optCitationsParens" checked class="ml-2"> מראי מקומות בסוגריים</label>
-                        <label class="flex items-center"><input type="checkbox" id="optMarkAmbiguous" checked class="ml-2"> סימון מילים מעורפלות [ספק: ...]</label>
-                        <label class="flex items-center"><input type="checkbox" id="optPreserveTimestamps" checked class="ml-2"> שמור על סימוני זמן [MM:SS]</label>
-                    </div>
-                </div>
-                <label class="block text-sm font-semibold mb-2">הנחיות מיוחדות לעריכה (אופציונלי):</label>
-                <textarea id="customEditPrompt" class="w-full p-2 border rounded bg-white text-sm focus:ring-2 focus:ring-green-500 outline-none" rows="2"></textarea>
-                <button id="editBtn" onclick="startEditing()" class="w-full mt-3 bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition disabled:bg-gray-400">בצע עריכה מתקדמת</button>
-                <div id="editStatus" class="mt-3 text-sm font-semibold text-green-700 hidden flex items-center bg-green-100 p-3 rounded-lg border border-green-300" aria-live="polite" role="status">
-                    <div class="loader" style="border-top-color: #16a34a;"></div>
-                    <span class="pulse-text flex-1" id="editStatusText">המערכת עורכת...</span>
-                    <span id="editTimerDisplay" class="timer mr-3" style="color: #16a34a; background: white;">00:00</span>
-                    <button id="stopEditBtn" onclick="stopEditing()" class="mr-3 bg-red-600 text-white px-4 py-1.5 rounded text-sm font-bold hover:bg-red-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed">⏹️ עצור עריכה</button>
-                </div>
-                
-                <div id="editDashboard" class="mt-3 hidden">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2">
-                        <div class="stat-card"><div class="stat-value" id="editStatRawWords">0</div><div class="stat-label">מילים בגולמי</div></div>
-                        <div class="stat-card"><div class="stat-value" id="editStatEditedWords">0</div><div class="stat-label">מילים בעריכה</div></div>
-                        <div class="stat-card"><div class="stat-value" id="editStatRatio">--</div><div class="stat-label">יחס כיסוי עריכה</div></div>
-                        <div class="stat-card"><div class="stat-value" id="editStatProvider">--</div><div class="stat-label">ספק AI</div></div>
-                    </div>
-                    <div class="mb-1 text-xs text-gray-600 flex justify-between"><span>התקדמות עריכה משוערת</span><span id="editProgressLabel">0%</span></div>
-                    <div class="progress-bar-bg"><div id="editProgressBar" class="progress-bar-fill" style="width: 0%; background: linear-gradient(to left, #16a34a, #22c55e);"></div></div>
-                </div>
-            </div>
-
-            <div id="editedTranscriptSection" class="stage-card mt-6 hidden p-5 rounded-xl bg-emerald-50">
-                <h2 class="text-xl font-bold mb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-emerald-900">
-                    <span>📜 תמלול ערוך סופי</span>
-                    <div class="flex gap-2 flex-wrap">
-                        <button id="toggleTs_editedTranscript" onclick="toggleTimestampsView('editedTranscript')" class="text-sm bg-indigo-100 text-indigo-800 px-3 py-1 rounded hover:bg-indigo-200">🕐 הסתר סימוני זמן</button>
-                        <button onclick="downloadWord('editedTranscript', 'תמלול_ערוך', true)" class="text-sm bg-emerald-100 text-emerald-800 px-3 py-1 rounded hover:bg-emerald-200">הורד Word</button>
-                        <button onclick="copyToClipboard('editedTranscript')" class="text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300">העתק</button>
-                    </div>
-                </h2>
-                <div id="editedNavView" class="hidden w-full h-80 p-4 border rounded bg-white text-base leading-relaxed overflow-auto" dir="rtl"></div>
-                <textarea id="editedTranscript" class="w-full h-80 p-4 border rounded bg-white text-base leading-relaxed resize-y focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
-
-                <div id="editedAudioNavBar" class="hidden mt-2 flex flex-wrap items-center gap-2 p-2 bg-emerald-50 border border-emerald-200 rounded">
-                    <button onclick="toggleNavView('edited')" class="text-sm bg-emerald-600 text-white px-3 py-1.5 rounded hover:bg-emerald-700">🔊 תצוגת ניווט בערוך</button>
-                    <span class="text-xs text-emerald-800">תצוגת הניווט בערוך משתמשת באותו נגן ובמיפוי הזמנים שנבנה בעת התמלול.</span>
-                </div>
-
-                <div class="mt-3 p-4 bg-violet-50 border border-violet-200 rounded-lg">
-                    <button onclick="showEditDiff()" class="w-full md:w-auto bg-violet-600 text-white font-semibold py-2 px-4 rounded hover:bg-violet-700 transition">🎨 הצג diff (השוואת גולמי לערוך בצבעים)</button>
-                    <div id="diffViewContainer" class="hidden mt-3"></div>
-                </div>
-                <div class="mt-3 p-4 bg-teal-50 border border-teal-200 rounded-lg">
-                    <button id="verifyFidelityBtn" onclick="startVerifyFidelity()" class="w-full md:w-auto bg-teal-600 text-white font-semibold py-2 px-4 rounded hover:bg-teal-700 transition disabled:bg-gray-400">⚖️ בדיקת נאמנות למקור</button>
-                    <div id="verifyFidelityStatus" class="mt-3 text-sm font-semibold text-teal-700 hidden flex items-center">
-                        <div class="loader" style="border-top-color: #0d9488;"></div><span class="pulse-text">משווה...</span>
-                    </div>
-                    <textarea id="verifyFidelityResult" class="w-full mt-3 h-24 p-2 border border-teal-200 rounded bg-white text-sm hidden resize-y outline-none" readonly></textarea>
-                </div>
-            </div>
-
-            <div class="mt-6 mb-2">
-                <h2 class="text-2xl font-bold text-emerald-900">🔬 הגהה מתקדמת</h2>
-                <p class="text-gray-500 text-sm mt-1">כלי הגהה ייעודיים — כתיב תורני, אחידות, ניקוד וציטוטים סמויים.</p>
-            </div>
-            <div id="proofingError" class="hidden mb-4 p-3 text-sm font-semibold rounded leading-relaxed"></div>
             
-            <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <span class="text-sm font-semibold text-gray-700 ml-3">מגיהים את:</span>
-                <label class="text-sm cursor-pointer ml-4"><input type="radio" name="proofingTarget" value="edited" checked class="ml-1"> <span class="src-mode-label" data-mode-edited="התמלול הערוך" data-mode-text="הטקסט הערוך">התמלול הערוך</span></label>
-                <label class="text-sm cursor-pointer"><input type="radio" name="proofingTarget" value="raw" class="ml-1"> <span class="src-mode-label" data-mode-edited="התמלול הגולמי" data-mode-text="הטקסט הגולמי">התמלול הגולמי</span></label>
             </div>
 
-            <div class="mb-6 p-5 bg-gradient-to-l from-rose-50 to-pink-50 rounded-xl border border-rose-200">
-                <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
-                    <h3 class="font-bold text-rose-800 text-lg">✍️ הגהת כתיב תורני</h3>
-                    <button id="scanSpellingBtn" onclick="scanTorahSpelling()" class="bg-rose-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-rose-700 transition">🔎 סרוק שגיאות כתיב</button>
-                </div>
-                <div id="spellingResultsContainer" class="mb-3"><p class="text-gray-500 text-sm p-2">טרם בוצעה סריקה.</p></div>
-                <button id="applySpellingBtn" onclick="applySpellingFixes()" class="bg-rose-700 text-white font-bold py-2 px-5 rounded-lg hover:bg-rose-800 transition disabled:bg-gray-400" disabled>החל תיקונים</button>
-            </div>
-
-            <div class="mb-6 p-5 bg-gradient-to-l from-indigo-50 to-blue-50 rounded-xl border border-indigo-200">
-                <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
-                    <h3 class="font-bold text-indigo-800 text-lg">⚖️ אחידות כתיב</h3>
-                    <button id="scanConsistencyBtn" onclick="scanConsistency()" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition">🔎 בדוק אחידות</button>
-                </div>
-                <div id="consistencyResultsContainer" class="mb-3"><p class="text-gray-500 text-sm p-2">טרם בוצעה בדיקה.</p></div>
-                <button id="applyConsistencyBtn" onclick="applyConsistency()" class="bg-indigo-700 text-white font-bold py-2 px-5 rounded-lg hover:bg-indigo-800 transition disabled:bg-gray-400" disabled>החל איחוד</button>
-            </div>
-
-            <div class="mb-6 p-5 bg-gradient-to-l from-amber-50 to-orange-50 rounded-xl border border-amber-200">
-                <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
-                    <h3 class="font-bold text-amber-800 text-lg">✒️ ניקוד סלקטיבי</h3>
-                    <button id="runNiqqudBtn" onclick="runSelectiveNiqqud()" class="bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition">✒️ נקד את הקטע הנבחר</button>
-                </div>
-                <div id="niqqudStatus" class="hidden mb-3 text-sm font-semibold text-amber-700 flex items-center bg-amber-100 p-3 rounded-lg border border-amber-300">
-                    <div class="loader" style="border-top-color: #d97706;"></div><span class="pulse-text">מנקד...</span>
-                </div>
-                <div id="niqqudPreview" class="w-full p-3 border rounded bg-white text-base leading-loose mb-3" dir="rtl" style="min-height: 60px; max-height: 300px; overflow:auto;"></div>
-                <button id="applyNiqqudBtn" onclick="applyNiqqud()" class="hidden bg-amber-700 text-white font-bold py-2 px-5 rounded-lg hover:bg-amber-800 transition">החל ניקוד</button>
-            </div>
-
-            <div class="mb-6 p-5 bg-gradient-to-l from-teal-50 to-cyan-50 rounded-xl border border-teal-200">
-                <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
-                    <h3 class="font-bold text-teal-800 text-lg">🔦 זיהוי ציטוטים סמויים</h3>
-                    <button id="scanHiddenCitationsBtn" onclick="scanHiddenCitations()" class="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-700 transition">🔍 זהה ציטוטים סמויים</button>
-                </div>
-                <div id="hiddenCitationsStatus" class="hidden mb-3 text-sm font-semibold text-teal-700 flex items-center bg-teal-100 p-3 rounded-lg border border-teal-300">
-                    <div class="loader" style="border-top-color: #0d9488;"></div><span class="pulse-text" id="hiddenCitationsStatusText">מנתח...</span>
-                </div>
-                <div id="hiddenCitationsContainer" class="mb-3"><p class="text-gray-500 text-sm p-2">טרם בוצעה סריקה.</p></div>
-                <button id="applyHiddenCitationsBtn" onclick="applyHiddenCitations()" class="bg-teal-700 text-white font-bold py-2 px-5 rounded-lg hover:bg-teal-800 transition disabled:bg-gray-400" disabled>הוסף מראי-מקומות</button>
-            </div>
-        </div> <div id="tab-sources" class="tab-panel">
-            <div class="mb-4">
-                <h2 class="text-2xl font-bold text-purple-900">📚 מקורות</h2>
-            </div>
-            <div id="sourcesError" class="hidden mb-4 p-3 bg-red-50 border-r-4 border-red-500 text-sm font-semibold text-red-700 rounded leading-relaxed"></div>
-
-            <div class="mb-6 p-5 bg-gradient-to-l from-purple-50 to-fuchsia-50 rounded-xl border border-purple-200">
-                <h3 class="font-bold text-purple-800 mb-3 text-lg">🔍 סריקת ציטוטים ואימות</h3>
-                <div class="mb-3">
-                    <div class="flex flex-wrap gap-3 text-sm">
-                        <label class="flex items-center bg-white border rounded p-2 px-4 cursor-pointer hover:border-purple-400"><input type="radio" name="sourceScanTarget" value="edited" checked class="ml-2"> <span class="src-mode-label" data-mode-edited="התמלול הערוך" data-mode-text="הטקסט הערוך">התמלול הערוך</span></label>
-                        <label class="flex items-center bg-white border rounded p-2 px-4 cursor-pointer hover:border-purple-400"><input type="radio" name="sourceScanTarget" value="raw" class="ml-2"> <span class="src-mode-label" data-mode-edited="התמלול הגולמי" data-mode-text="הטקסט הגולמי">התמלול הגולמי</span></label>
-                    </div>
-                </div>
-                <div class="flex flex-wrap gap-2 items-center">
-                    <button id="runSourceScanBtn" onclick="runSourceScan()" class="bg-purple-700 text-white font-bold py-2.5 px-5 rounded-lg hover:bg-purple-800 transition disabled:bg-gray-400">🔍 סרוק ציטוטים</button>
-                    <button id="abortSourceScanBtn" onclick="abortSourceScan()" class="hidden bg-red-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-red-700 transition">⏹️ עצור</button>
-                </div>
-                <div id="sourceScanStatus" class="hidden mt-3 text-sm font-semibold text-purple-700 flex items-center bg-purple-100 p-3 rounded-lg border border-purple-300">
-                    <div class="loader" style="border-top-color: #7c3aed;"></div><span class="pulse-text" id="sourceScanStatusText">סורק...</span>
-                </div>
-            </div>
-
-            <div class="mb-6 p-5 bg-white rounded-xl border border-gray-200">
-                <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
-                    <h3 class="font-bold text-gray-800 text-lg">📋 ציטוטים שזוהו</h3>
-                    <div class="text-xs text-gray-500 flex gap-3 flex-wrap">
-                        <span><span class="src-legend-dot src-legend-verified"></span> אומת</span>
-                        <span><span class="src-legend-dot src-legend-ambiguous"></span> מעורפל</span>
-                        <span><span class="src-legend-dot src-legend-failed"></span> לא אומת</span>
-                    </div>
-                </div>
-                <div id="sourcesListContainer"><p class="text-gray-500 text-sm p-3">טרם בוצעה סריקה. לחץ "סרוק ציטוטים" כדי להתחיל.</p></div>
-            </div>
-
-            <div class="mb-6 p-5 bg-white rounded-xl border border-gray-200">
-                <h3 class="font-bold text-gray-800 mb-3 text-lg">🖍️ הציטוטים בתוך הטקסט</h3>
-                <div id="sourcesHighlightView" class="w-full p-4 border rounded bg-gray-50 text-base leading-loose overflow-auto" dir="rtl" style="max-height: 420px;">
-                    <p class="text-gray-400 text-sm">הרץ סריקה כדי לראות את הציטוטים מודגשים בטקסט.</p>
-                </div>
-            </div>
-
-            <div class="mb-6 p-5 bg-gradient-to-l from-amber-50 to-yellow-50 rounded-xl border border-amber-200">
-                <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
-                    <h3 class="font-bold text-amber-800 text-lg">🗂️ מפתח מקורות</h3>
-                    <div class="flex gap-2">
-                        <button id="copySourcesIndexBtn" onclick="copySourcesIndex()" class="text-sm bg-amber-100 text-amber-800 px-3 py-1.5 rounded hover:bg-amber-200 font-semibold">📋 העתק</button>
-                        <button onclick="exportSourcesIndex()" class="text-sm bg-amber-600 text-white px-3 py-1.5 rounded hover:bg-amber-700 font-semibold">⬇️ ייצא קובץ</button>
-                    </div>
-                </div>
-                <div id="sourcesIndexContainer"><p class="text-gray-400 text-sm">מפתח המקורות ייבנה אוטומטית אחרי הסריקה.</p></div>
-            </div>
-
-            <div class="mb-6 p-5 bg-gradient-to-l from-sky-50 to-blue-50 rounded-xl border border-sky-200">
-                <h3 class="font-bold text-sky-800 mb-3 text-lg">🔎 חיפוש מקורות חופשי</h3>
-                <div class="flex flex-wrap gap-2">
-                    <input type="text" id="topicSearchInput" class="flex-1 min-w-[200px] p-2.5 border rounded bg-white text-sm focus:ring-2 focus:ring-sky-500 outline-none" placeholder="לדוגמה: כוונה בתפילה...">
-                    <button id="topicSearchBtn" onclick="runTopicSearch()" class="bg-sky-600 text-white font-bold py-2.5 px-5 rounded-lg hover:bg-sky-700 transition disabled:bg-gray-400">🔍 חפש</button>
-                </div>
-                <div id="topicSearchResults" class="mt-3"></div>
-            </div>
-        </div> <div id="tab-publish" class="tab-panel">
-            <div class="mb-4">
-                <h2 class="text-2xl font-bold text-fuchsia-900">📖 הוצאה לאור</h2>
-            </div>
-            <div id="publishError" class="hidden mb-4 p-3 text-sm font-semibold rounded leading-relaxed"></div>
-
-            <div class="mb-6 p-5 bg-gradient-to-l from-fuchsia-50 to-pink-50 rounded-xl border border-fuchsia-200">
-                <h3 class="font-bold text-fuchsia-800 mb-3 text-lg">📝 פרטי המסמך</h3>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold mb-1 text-fuchsia-900">כותרת המסמך</label>
-                        <input type="text" id="publishDocTitle" class="w-full p-2 border rounded bg-white text-sm focus:ring-2 focus:ring-fuchsia-500 outline-none" placeholder="ריק = שם הפרויקט">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold mb-1 text-fuchsia-900">שם המחבר / העורך</label>
-                        <input type="text" id="publishDocAuthor" class="w-full p-2 border rounded bg-white text-sm focus:ring-2 focus:ring-fuchsia-500 outline-none" placeholder="אופציונלי">
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-6 p-5 bg-white rounded-xl border border-gray-200">
-                <h3 class="font-bold text-gray-800 mb-3 text-lg">⚙️ מה לכלול במסמך</h3>
-                <div class="grid md:grid-cols-2 gap-2 text-sm">
-                    <label class="flex items-center cursor-pointer"><input type="checkbox" id="publishIncludeTitlePage" checked class="ml-2"> 📄 דף שער</label>
-                    <label class="flex items-center cursor-pointer"><input type="checkbox" id="publishIncludeTOC" checked class="ml-2"> 📑 תוכן עניינים (מהכותרות)</label>
-                    <label class="flex items-center cursor-pointer"><input type="checkbox" id="publishIncludeSourcesIndex" checked class="ml-2"> 🗂️ מפתח מקורות (מטאב "מקורות")</label>
-                    <label class="flex items-center cursor-pointer"><input type="checkbox" id="publishIncludePageNumbers" checked class="ml-2"> 🔢 מספרי עמודים</label>
-                </div>
-            </div>
-
-            <div class="mb-6 p-5 bg-gradient-to-l from-blue-50 to-indigo-50 rounded-xl border border-indigo-200">
-                <h3 class="font-bold text-indigo-800 mb-3 text-lg">🚀 ייצוא</h3>
-                <div class="flex flex-wrap gap-3">
-                    <button id="exportWordBtn" onclick="exportToWord()" class="bg-blue-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-800 transition">📘 ייצא ל-Word</button>
-                    <button id="exportPdfBtn" onclick="exportToPDF()" class="bg-red-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-red-800 transition">📕 ייצא ל-PDF</button>
-                    <button id="showPreviewBtn" onclick="showPublishPreview()" class="bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-lg hover:bg-gray-300 transition">👁️ תצוגה מקדימה</button>
-                </div>
-            </div>
-            <div id="publishPreviewContainer" class="hidden mb-6 rounded-xl border border-gray-300 bg-gray-100 overflow-hidden"></div>
-        </div> </div> <div id="projectsModal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <div class="flex justify-between items-center mb-1">
-                <h3>🗂️ הפרויקטים שלי</h3>
-                <button type="button" onclick="closeProjectsModal()" class="text-gray-400 hover:text-gray-700 text-xl">✕</button>
-            </div>
-            <p class="text-xs text-gray-500 mb-3">כל הפרויקטים נשמרים בדפדפן זה (localStorage). הפרויקט הפעיל נשמר אוטומטית.</p>
-            <div id="projectsListContainer"></div>
-            <div class="mt-4 pt-3 border-t border-gray-200 flex gap-2">
-                <button type="button" onclick="newProject(true); closeProjectsModal();" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded hover:bg-indigo-700 text-sm">➕ פרויקט חדש</button>
-                <button type="button" onclick="closeProjectsModal()" class="bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded hover:bg-gray-300 text-sm">סגור</button>
-            </div>
-        </div>
     </div>
-
-    <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="חזרה למעלה"
-        style="position:fixed; bottom:20px; left:20px; z-index:60; width:44px; height:44px; border-radius:50%; background:#4f46e5; color:white; border:none; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.3); display:flex; justify-content:center; align-items:center; font-size:18px;">
-        ↑
-    </button>
-
-    <script src="app.js"></script>
 </body>
 </html>
