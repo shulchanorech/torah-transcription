@@ -52,14 +52,31 @@ function unlockApp() {
             if (document.readyState !== 'loading') unlockApp();
         } else {
             document.addEventListener('DOMContentLoaded', () => {
-                const inp = document.getElementById('gatePassword');
-                if (inp) inp.focus();
+                const entryBtn = document.getElementById('gateEntryButton');
+                if (entryBtn) entryBtn.focus();
             });
         }
     } catch (e) {
         // אם localStorage חסום — פשוט נשאיר את השער (המשתמש יזין סיסמה)
     }
 })();
+
+function openGateModal() {
+    const entryBtn = document.getElementById('gateEntryButton');
+    const modal = document.getElementById('gateModal');
+    const input = document.getElementById('gatePassword');
+    if (entryBtn) {
+        entryBtn.classList.add('hidden');
+    }
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+    if (input) {
+        input.value = '';
+        input.focus();
+    }
+}
 
 // =======================================================
 // מילון תורני מובנה — נטען אוטומטית כתוספת לכל קריאה

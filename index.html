@@ -15,29 +15,32 @@
 
     <div id="passwordGate">
         <div class="gate-overlay"></div>
+        <button id="gateEntryButton" class="gate-entry-btn" onclick="openGateModal()" type="button">לכניסה למערכת</button>
         <div class="gate-content">
-            <div class="gate-card">
-                <div class="gate-card-header">
-                    <div class="gate-icon">📜</div>
-                    <div>
-                        <h2 class="gate-title">שולחן עורך</h2>
-                        <p class="gate-subtitle">ארגז הכלים לעורך התורני</p>
+            <div id="gateModal" class="gate-modal hidden" aria-hidden="true">
+                <div class="gate-card">
+                    <div class="gate-card-header">
+                        <div class="gate-icon">🔐</div>
+                        <div>
+                            <h2 class="gate-title">כניסה למערכת</h2>
+                            <p class="gate-subtitle">הזן את סיסמת הגישה כדי להמשיך</p>
+                        </div>
                     </div>
-                </div>
-                <div class="gate-card-body">
-                    <p class="gate-description">כניסה מאובטחת לכלי העורך המתקדם. הזן את סיסמת הגישה.</p>
-                    <div class="gate-input-group">
-                        <input type="password" id="gatePassword" placeholder="סיסמת גישה..." autocomplete="off" onkeydown="if(event.key==='Enter') checkGatePassword()">
-                        <span class="gate-input-icon">🔐</span>
+                    <div class="gate-card-body">
+                        <p class="gate-description">הכנס סיסמה מאובטחת כדי לפתוח את ממשק העורך. השער הראשוני נשאר שקוף ומלכד את התמונה.</p>
+                        <div class="gate-input-group">
+                            <input type="password" id="gatePassword" placeholder="סיסמת גישה..." autocomplete="off" onkeydown="if(event.key==='Enter') checkGatePassword()">
+                            <span class="gate-input-icon">🔐</span>
+                        </div>
+                        <button class="gate-button" onclick="checkGatePassword()" type="button">
+                            <span>כניסה</span>
+                            <span class="gate-button-arrow">→</span>
+                        </button>
+                        <div class="gate-error" id="gateError"></div>
                     </div>
-                    <button class="gate-button" onclick="checkGatePassword()">
-                        <span>כניסה</span>
-                        <span class="gate-button-arrow">→</span>
-                    </button>
-                    <div class="gate-error" id="gateError"></div>
-                </div>
-                <div class="gate-card-footer">
-                    <p>כל משתמש מוזן מפתח Gemini API משלו</p>
+                    <div class="gate-card-footer">
+                        <p>גישה פרטית לתוכנה — ללא חסימה במרכז התמונה.</p>
+                    </div>
                 </div>
             </div>
         </div>
