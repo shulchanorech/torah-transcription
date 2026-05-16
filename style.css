@@ -361,7 +361,7 @@ h2, h3 { letter-spacing: -0.005em; }
     margin-bottom: 2rem;
 }
 .gate-description {
-    color: #94a3b8;
+    color: #e8d7b0;
     font-size: 0.95rem;
     line-height: 1.6;
     margin: 0 0 1.75rem 0;
@@ -372,76 +372,75 @@ h2, h3 { letter-spacing: -0.005em; }
 }
 #passwordGate input {
     width: 100%;
-    padding: 1.1rem 1.4rem 1.1rem 3.2rem;
-    border: 2px solid rgba(255,255,255,0.15);
+    padding: 1.1rem 1.4rem 1.1rem 3rem;
+    border: 1px solid rgba(255,255,255,0.32);
     border-radius: 14px;
     font-size: 1.05rem;
     outline: none;
-    background: rgba(255,255,255,0.06);
-    color: #eef2ff;
-    font-weight: 500;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    letter-spacing: 0.04em;
+    background: rgba(255,255,255,0.92);
+    color: #1f2937;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    letter-spacing: 0.03em;
 }
 #passwordGate input::placeholder {
-    color: rgba(203,213,225,0.5);
+    color: rgba(31,41,55,0.5);
 }
 #passwordGate input:focus {
-    border-color: rgba(217,119,6,0.8);
-    background: rgba(255,255,255,0.11);
-    box-shadow: 
-        0 0 0 1px rgba(217,119,6,0.3),
-        inset 0 0 0 1px rgba(217,119,6,0.1),
-        0 0 24px rgba(217,119,6,0.25);
+    border-color: rgba(217,119,6,0.75);
+    background: rgba(255,255,255,0.98);
+    box-shadow:
+        0 0 0 1px rgba(217,119,6,0.28),
+        0 0 18px rgba(245,158,11,0.12);
 }
 .gate-input-icon {
     position: absolute;
-    right: 1.4rem; top: 50%;
+    right: 1.3rem; top: 50%;
     transform: translateY(-50%);
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     opacity: 0.7;
     pointer-events: none;
 }
 #passwordGate button {
     width: 100%;
-    padding: 1.1rem 1.6rem;
-    background: linear-gradient(120deg, #d97706, #f59e0b, #fbbf24);
+    padding: 1.05rem 1.5rem;
+    background: linear-gradient(120deg, #fbbf24, #f59e0b, #d97706);
     color: #1f2937;
     font-weight: 800;
-    font-size: 1.05rem;
+    font-size: 1.02rem;
     border: none;
     border-radius: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.8rem;
-    box-shadow: 
-        0 20px 40px -8px rgba(217,119,6,0.5),
-        inset 0 1px 0 rgba(255,255,255,0.3);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    gap: 0.75rem;
+    box-shadow:
+        0 18px 38px -14px rgba(217,119,6,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     letter-spacing: 0.01em;
 }
 #passwordGate button:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-        0 28px 48px -10px rgba(217,119,6,0.65),
-        inset 0 1px 0 rgba(255,255,255,0.4);
+    transform: translateY(-1px);
+    box-shadow:
+        0 22px 46px -12px rgba(217,119,6,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.45);
 }
 #passwordGate button:active {
     transform: translateY(0);
-    box-shadow: 
-        0 12px 24px -6px rgba(217,119,6,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.2);
+    box-shadow:
+        0 10px 22px -10px rgba(217,119,6,0.38),
+        inset 0 1px 0 rgba(255,255,255,0.25);
 }
 .gate-button-arrow {
     font-size: 1.2rem;
     font-weight: 900;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 #passwordGate .gate-error {
-    color: #fca5a5;
-    font-size: 0.9rem;
+    color: #b91c1c;
+    font-size: 0.92rem;
     margin-top: 1rem;
     min-height: 1.4rem;
     font-weight: 600;
@@ -449,10 +448,10 @@ h2, h3 { letter-spacing: -0.005em; }
 }
 .gate-card-footer {
     padding-top: 1.5rem;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid rgba(255,255,255,0.10);
 }
 .gate-card-footer p {
-    color: #64748b;
+    color: #d6c69b;
     font-size: 0.85rem;
     margin: 0;
     letter-spacing: 0.01em;
@@ -867,49 +866,52 @@ button:active { transform: scale(0.985); }
 /* כרטיסי בחירת מסלול */
 .route-card {
     display: block; cursor: pointer;
-    border: 2px solid #e5e7eb; border-radius: 12px;
-    padding: 0; transition: all 0.18s;
-    background: white;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 0;
+    transition: all 0.18s;
+    background: rgba(255,249,235,0.14);
 }
-.route-card:hover { border-color: #818cf8; }
+.route-card:hover { border-color: rgba(245,158,11,0.55); box-shadow: 0 16px 40px -20px rgba(245,158,11,0.45); }
 .route-card.route-card-active {
-    border-color: #4338ca;
-    box-shadow: 0 0 0 3px rgba(67,56,202,0.12);
-    background: #eef2ff;
+    border-color: rgba(245,158,11,0.75);
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.18);
+    background: rgba(255,238,204,0.22);
 }
 .route-radio { position: absolute; opacity: 0; pointer-events: none; }
 .route-card-body { padding: 16px 18px; }
 .route-card-icon { font-size: 2rem; margin-bottom: 6px; }
-.route-card-title { font-size: 1.1rem; font-weight: 700; color: #1e3a8a; margin-bottom: 4px; }
-.route-card-desc { font-size: 0.85rem; color: #6b7280; line-height: 1.5; }
+.route-card-title { font-size: 1.1rem; font-weight: 700; color: #f3d78d; margin-bottom: 4px; }
+.route-card-desc { font-size: 0.85rem; color: #e7d9b6; line-height: 1.5; }
 
 /* כלי הגהה — פריטי תיקון */
 .proof-list-head {
     padding: 6px 4px; margin-bottom: 6px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid rgba(255,255,255,0.16);
 }
-.proof-checkall { font-size: 0.85rem; font-weight: 600; color: #4b5563; cursor: pointer; }
+.proof-checkall { font-size: 0.85rem; font-weight: 600; color: #f3e0b3; cursor: pointer; }
 .proof-checkall input { margin-left: 6px; }
 .proof-item {
     display: flex; gap: 10px; align-items: flex-start;
-    padding: 8px 10px; margin-bottom: 6px;
-    background: white; border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    padding: 10px 12px; margin-bottom: 6px;
+    background: rgba(255,249,235,0.14);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 10px;
 }
 .proof-item-check { padding-top: 2px; }
 .proof-item-body { flex: 1; }
 .proof-fix-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .proof-found {
-    background: #fee2e2; color: #991b1b;
+    background: rgba(239,68,68,0.2); color: #fca5a5;
     padding: 2px 8px; border-radius: 5px;
     font-weight: 600; text-decoration: line-through;
 }
-.proof-arrow { color: #6b7280; font-weight: bold; }
+.proof-arrow { color: #e7d9b6; font-weight: bold; }
 .proof-suggestion {
-    background: #d1fae5; color: #065f46;
+    background: rgba(16,185,129,0.18); color: #a7f3d0;
     padding: 2px 8px; border-radius: 5px; font-weight: 700;
 }
-.proof-rule { font-size: 0.78rem; color: #6b7280; margin-top: 3px; }
+.proof-rule { font-size: 0.78rem; color: #e8d7b1; margin-top: 3px; }
 
 /* אחידות כתיב */
 .proof-consistency-item {
@@ -1156,11 +1158,14 @@ small {
 }
 
 #passwordGate input {
-    background: rgba(255,255,255,0.06) !important;
+    background: rgba(255,255,255,0.92) !important;
+    border-color: rgba(255,255,255,0.32) !important;
+    color: #1f2937 !important;
 }
 
 #passwordGate button {
-    background: linear-gradient(120deg, #d97706, #f59e0b, #fbbf24) !important;
+    background: linear-gradient(120deg, #fbbf24, #f59e0b, #d97706) !important;
+    color: #1f2937 !important;
 }
 
 #passwordGate .gate-error {
@@ -1259,19 +1264,19 @@ small {
 
 .route-card {
     border: 1px solid rgba(255,255,255,0.16);
-    background: rgba(255,255,255,0.04);
+    background: rgba(255,249,235,0.12);
 }
 
 .route-card:hover {
     transform: translateY(-1px);
-    border-color: rgba(99,102,241,0.38);
-    background: rgba(255,255,255,0.1);
+    border-color: rgba(245,158,11,0.45);
+    background: rgba(255,249,235,0.18);
 }
 
 .route-card.route-card-active {
-    background: rgba(99,102,241,0.18);
-    border-color: rgba(99,102,241,0.6);
-    box-shadow: 0 18px 42px rgba(67,56,202,0.16);
+    background: rgba(255,238,204,0.24);
+    border-color: rgba(245,158,11,0.7);
+    box-shadow: 0 18px 42px rgba(245,158,11,0.18);
 }
 
 .route-card-body {
@@ -1279,11 +1284,11 @@ small {
 }
 
 .route-card-title {
-    color: #eef2ff;
+    color: #f8e4a3;
 }
 
 .route-card-desc {
-    color: #cbd5e1;
+    color: #f1e2b8;
 }
 
 .source-tab {
