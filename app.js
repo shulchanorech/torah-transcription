@@ -5,15 +5,24 @@
    ======================================================= */
 
 // =======================================================
-// v8.5: מסך כניסה עם סיסמה — חסימה רכה בצד-לקוח
-// הערה: זוהי הגנה רכה. הלוגיקה רצה בדפדפן, ולכן מי שמבין בקוד יכול לעקוף.
-// מספיק כדי למנוע כניסה מזדמנת — לא תחליף לאימות-שרת אמיתי.
+// v9.1: מסך כניסה עם סיסמה — חסימה רכה משופרת (lockout + ניסיונות מוגבלים)
 // =======================================================
 const ACCESS_HASH = "91b594446a5b689fed65ad5268ec1c7e4f6c88f5186bd92f607f93ad011054f9";
+const MAX_GATE_ATTEMPTS = 5;
+const GATE_LOCKOUT_MS = 60 * 1000;
 
 async function sha256Hex(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function getGateLockoutRemaining() {
+    try {
+        const until = parseInt(localStorage.getItem('torahApp_gateLockoutUntil') || '0', 10);
+        const now = Date.now();
+        if (until > now) return Math.ceil((until - now) / 1000);
+    } catch (e) {}
+    return 0;
 }
 
 async function checkGatePassword() {
@@ -21,13 +30,33 @@ async function checkGatePassword() {
     const errEl = document.getElementById('gateError');
     const raw = (inputEl.value || '').trim().replace(/\s+/g, ' ');
     if (!raw) { errEl.textContent = 'נא להזין סיסמה'; return; }
+    const lockoutSec = getGateLockoutRemaining();
+    if (lockoutSec > 0) {
+        errEl.textContent = '🔒 חריגה ממספר הניסיונות. נסה שוב בעוד ' + lockoutSec + ' שניות.';
+        return;
+    }
     try {
         const hash = await sha256Hex(raw);
         if (hash === ACCESS_HASH) {
-            try { localStorage.setItem('torahApp_accessGranted', '1'); } catch (e) {}
+            try {
+                localStorage.setItem('torahApp_accessGranted', '1');
+                localStorage.removeItem('torahApp_gateAttempts');
+                localStorage.removeItem('torahApp_gateLockoutUntil');
+            } catch (e) {}
             unlockApp();
         } else {
-            errEl.textContent = '❌ סיסמה שגויה';
+            let attempts = 0;
+            try {
+                attempts = parseInt(localStorage.getItem('torahApp_gateAttempts') || '0', 10) + 1;
+                localStorage.setItem('torahApp_gateAttempts', String(attempts));
+                if (attempts >= MAX_GATE_ATTEMPTS) {
+                    localStorage.setItem('torahApp_gateLockoutUntil', String(Date.now() + GATE_LOCKOUT_MS));
+                    localStorage.setItem('torahApp_gateAttempts', '0');
+                }
+            } catch (e) {}
+            const remaining = MAX_GATE_ATTEMPTS - attempts;
+            if (remaining > 0) errEl.textContent = '❌ סיסמה שגויה (נותרו ' + remaining + ' ניסיונות)';
+            else errEl.textContent = '🔒 חריגה ממספר הניסיונות. נסה שוב בעוד ' + Math.ceil(GATE_LOCKOUT_MS/1000) + ' שניות.';
             inputEl.value = '';
             inputEl.focus();
         }
@@ -363,7 +392,8 @@ const SPEED_PROFILES = {
     }
 };
 
-function applySpeedProfile(profileName) {
+// v9.1: תיקון - שימוש בפרמטר evt מפורש (event גלובלי לא אמין במצבים מסוימים)
+function applySpeedProfile(profileName, evt) {
     const profile = SPEED_PROFILES[profileName];
     if (!profile) return;
     currentSpeedProfile = profileName;
@@ -373,11 +403,11 @@ function applySpeedProfile(profileName) {
     document.getElementById('skipAnchors').checked = profile.skipAnchors;
     document.getElementById('skipValidation').checked = profile.skipValidation;
 
-    // אם הפרופיל כופה מצב כיסוי (כמו Express → single) — נחיל גם אותו
     if (profile.forceCoverageMode) applyCoverageMode(profile.forceCoverageMode);
 
     document.querySelectorAll('.speed-pill').forEach(p => p.classList.remove('active'));
-    if (typeof event !== 'undefined' && event.currentTarget) event.currentTarget.classList.add('active');
+    const useEvt = evt || (typeof window !== 'undefined' && window.event) || null;
+    if (useEvt && useEvt.currentTarget && useEvt.currentTarget.classList) useEvt.currentTarget.classList.add('active');
     else {
         // קריאה תכנותית — מצא את הכפתור הנכון
         document.querySelectorAll('.speed-pill').forEach(p => {
@@ -715,7 +745,23 @@ function updateCostEstimate() {
     const overlap = parseInt(document.getElementById('chunkOverlapSeconds')?.value || '20', 10);
 
     const stepSec = chunkMin * 60;
-    const numChunks = useChunks ? Math.ceil(duration / Math.max(1, stepSec - overlap)) : 1;
+    // v9.1: תיקון - שימוש באלגוריתם של planChunks למניעת אי-עקביות בחישוב עלות
+    let numChunks;
+    if (useChunks) {
+        let count = 0;
+        let start = 0;
+        while (start < duration) {
+            const end = Math.min(duration, start + stepSec);
+            count++;
+            if (end >= duration) break;
+            start = end - overlap;
+            if (start < 0) start = 0;
+            if (start >= duration) break;
+        }
+        numChunks = count;
+    } else {
+        numChunks = 1;
+    }
 
     const audioTokensPerCall = useChunks
         ? Math.round((stepSec + overlap) * 32) // לכל צ'אנק
@@ -846,7 +892,8 @@ function detectRepetitionLoop(text) {
             const idx = tail3000.indexOf(lastUnit, searchStart);
             if (idx === -1) break;
             occurrences++;
-            searchStart = idx + 1;
+            // v9.1: תיקון ביצועים O(n²) -> O(n): קידום באורך המלא במקום תו אחד
+            searchStart = idx + unitLen;
             if (occurrences >= 3) return true;
         }
     }
@@ -867,7 +914,8 @@ function detectRepetitionLoop(text) {
                 const idx = recentText.indexOf(ngram, pos);
                 if (idx === -1) break;
                 count++;
-                pos = idx + 1;
+                // v9.1: תיקון ביצועים O(n²) -> O(n)
+                pos = idx + ngram.length;
                 if (count >= 3) return true;
             }
         }
@@ -1548,7 +1596,8 @@ async function runFullPipeline() {
             statusText.innerText = `מעלה את הקובץ לשרת Google...`;
             const file = document.getElementById('audioFile').files[0];
             const uploadedFile = await uploadFileToGemini(geminiKey, file);
-            currentSourcePart = { fileData: { mimeType: uploadedFile.mimeType, fileUri: uploadedFile.uri } };
+            // v9.1: שמירת זמן העלאה לבדיקת תפוגה
+            currentSourcePart = { fileData: { mimeType: uploadedFile.mimeType, fileUri: uploadedFile.uri }, _uploadedAt: Date.now() };
             statusText.innerText = 'ממתין לאישור עיבוד הקובץ...';
             await waitForFileProcessing(geminiKey, uploadedFile.name, statusText);
         } else {
@@ -2412,6 +2461,16 @@ async function forceContinueTranscription() {
     if (!apiKey || !rawTextArea.value.trim() || !currentSourcePart) {
         alert("לא ניתן לבצע המשך מאולץ. ודא שיש מפתח, מקור שמע ותמלול קיים.");
         return;
+    }
+
+    // v9.1: אזהרה אם הקובץ ב-Gemini ייתכן שכבר נמחק (Gemini Files API שומר ל-48 שעות)
+    if (currentSourcePart.fileData && currentSourcePart.fileData.fileUri && currentSourcePart._uploadedAt) {
+        const ageHours = (Date.now() - currentSourcePart._uploadedAt) / (1000 * 60 * 60);
+        if (ageHours > 40) {
+            if (!confirm('קובץ השמע הועלה ל-Gemini לפני ' + Math.round(ageHours) + ' שעות. ייתכן שהוא נמחק (שמירה עד 48 שעות). להמשיך בכל זאת? אם נכשל - יש להעלות מחדש.')) {
+                return;
+            }
+        }
     }
 
     const statusEl = document.getElementById('verifyCompleteStatus');
@@ -3389,14 +3448,23 @@ function toggleNavView(which) {
     }
 }
 
+// v9.1: שדרוג - שימוש ב-Clipboard API מודרני עם fallback ל-execCommand
 function copyToClipboard(elementId) {
     const el = document.getElementById(elementId);
     if (!el) return;
-    el.select();
-    document.execCommand('copy');
-    const orig = el.style.backgroundColor;
-    el.style.backgroundColor = '#dbeafe';
-    setTimeout(() => { el.style.backgroundColor = orig; }, 300);
+    const text = el.value !== undefined ? el.value : el.textContent;
+    const flashSuccess = () => {
+        const orig = el.style.backgroundColor;
+        el.style.backgroundColor = '#dbeafe';
+        setTimeout(() => { el.style.backgroundColor = orig; }, 300);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(flashSuccess).catch(() => {
+            try { el.select(); document.execCommand('copy'); flashSuccess(); } catch(e) {}
+        });
+    } else {
+        try { el.select(); document.execCommand('copy'); flashSuccess(); } catch(e) {}
+    }
 }
 
 function downloadWord(elementId, prefixFilename, parseHeadings) {
@@ -4160,9 +4228,19 @@ function resetPageForNewProject() {
     audioDurationSeconds = 0;
     chunkResults = [];
     wordTimeMap = [];
-    // הסתרת קטעי-תוצאה
+    // v9.1: ניקוי audioBlobUrl ו-cachedDecodedBuffer למניעת memory leak ושמע שגוי
+    try {
+        if (typeof audioBlobUrl !== 'undefined' && audioBlobUrl) {
+            URL.revokeObjectURL(audioBlobUrl);
+            audioBlobUrl = null;
+        }
+    } catch(e) {}
+    try { if (typeof cachedDecodedBuffer !== 'undefined') cachedDecodedBuffer = null; } catch(e) {}
+    const navPlayer = g('navAudioPlayer');
+    if (navPlayer) { try { navPlayer.pause(); navPlayer.src = ''; navPlayer.load(); } catch(e) {} }
     ['anchorsSection','rawTranscriptSection','validationSection','editingControlsSection',
-     'editedTranscriptSection','qualityDashboard','chunksSection'].forEach(id => {
+     'editedTranscriptSection','qualityDashboard','chunksSection',
+     'rawAudioNavBar','editedAudioNavBar'].forEach(id => {
         if (g(id)) g(id).classList.add('hidden');
     });
     const afInfo = g('audioFileInfo');
@@ -4170,6 +4248,13 @@ function resetPageForNewProject() {
     const af = g('audioFile');
     if (af) af.value = '';
 }
+
+// v9.1: ניקוי משאבים בסגירת הדף - מונע memory leaks
+window.addEventListener('beforeunload', () => {
+    try {
+        if (typeof audioBlobUrl !== 'undefined' && audioBlobUrl) URL.revokeObjectURL(audioBlobUrl);
+    } catch(e) {}
+});
 
 // טעינת פרויקט קיים לפי מזהה
 function loadProject(projectId) {
@@ -4302,6 +4387,7 @@ function renderProjectsList() {
         delBtn.className = 'text-xs bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200 font-semibold';
         delBtn.textContent = '🗑️';
         delBtn.title = 'מחק פרויקט';
+        delBtn.setAttribute('aria-label', 'מחק פרויקט'); // v9.1: נגישות
         delBtn.onclick = () => deleteProject(id);
         item.appendChild(openBtn);
         item.appendChild(delBtn);

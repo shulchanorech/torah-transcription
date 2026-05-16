@@ -7,8 +7,10 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>שולחן עורך — ארגז הכלים לעורך התורני</title>
+    <!-- v9.1: הוספת crossorigin ל-mammoth (CDN tailwind play אינו תומך SRI יציב) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="p-4 md:p-10 text-gray-800 gated">
@@ -217,7 +219,7 @@
                 <input type="file" id="ocrImageInput" accept="image/*" class="w-full p-2 border rounded bg-white" onchange="loadOcrImage(event)">
                 <div id="ocrImageInfo" class="text-xs text-gray-600 mt-1"></div>
                 <button id="runOcrBtn" onclick="runImageOcr()" class="mt-2 bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 transition disabled:bg-gray-400" disabled>🔍 חלץ טקסט מהתמונה</button>
-                <div id="ocrStatus" class="hidden mt-2 text-sm font-semibold text-purple-700 flex items-center bg-purple-100 p-3 rounded-lg border border-purple-300">
+                <div id="ocrStatus" class="hidden mt-2 text-sm font-semibold text-purple-700 flex items-center bg-purple-100 p-3 rounded-lg border border-purple-300" aria-live="polite" role="status">
                     <div class="loader" style="border-top-color: #7c3aed;"></div>
                     <span class="pulse-text" id="ocrStatusText">מחלץ טקסט...</span>
                 </div>
@@ -303,10 +305,10 @@
             <div class="mb-3">
                 <p class="text-sm font-semibold mb-2 text-orange-900">בחר פרופיל מהיר:</p>
                 <div class="flex flex-wrap gap-2">
-                    <div class="speed-pill" onclick="applySpeedProfile('express')">🚀 Express (מהיר ביותר, ללא צ'אנקים)</div>
-                    <div class="speed-pill" onclick="applySpeedProfile('turbo')">⚡⚡ טורבו</div>
-                    <div class="speed-pill active" onclick="applySpeedProfile('balanced')">⚖️ מאוזן (מומלץ)</div>
-                    <div class="speed-pill" onclick="applySpeedProfile('max')">🎯 דיוק מקסימלי</div>
+                    <div class="speed-pill" onclick="applySpeedProfile('express', event)">🚀 Express (מהיר ביותר, ללא צ'אנקים)</div>
+                    <div class="speed-pill" onclick="applySpeedProfile('turbo', event)">⚡⚡ טורבו</div>
+                    <div class="speed-pill active" onclick="applySpeedProfile('balanced', event)">⚖️ מאוזן (מומלץ)</div>
+                    <div class="speed-pill" onclick="applySpeedProfile('max', event)">🎯 דיוק מקסימלי</div>
                 </div>
                 <p class="text-xs text-gray-600 mt-2" id="speedProfileDescription">מצב מאוזן: מודל מהיר (flash) לעוגנים וולידציה, מודל ראשי (pro) לתמלול ועריכה — איזון אופטימלי בין מהירות ואיכות.</p>
             </div>
@@ -482,7 +484,7 @@
         </div>
         <input type="file" id="editOnlyFileInput" accept=".txt,.md,.doc,.docx,.html" class="hidden" onchange="loadTranscriptFromFile(event)">
 
-        <div id="pipelineStatus" class="mt-4 text-sm font-semibold text-blue-700 hidden flex items-center bg-blue-50 p-3 rounded-lg border border-blue-200">
+        <div id="pipelineStatus" class="mt-4 text-sm font-semibold text-blue-700 hidden flex items-center bg-blue-50 p-3 rounded-lg border border-blue-200" aria-live="polite" role="status">
             <div class="loader"></div>
             <span id="pipelineStatusText" class="pulse-text flex-1">המערכת מתחילה את הצינור...</span>
             <span id="pipelineTimer" class="timer mr-3">00:00</span>
@@ -491,7 +493,7 @@
 
         <div id="loopAlertContainer"></div>
 
-        <div id="errorMsg" class="mt-4 p-3 bg-red-50 border-r-4 border-red-500 text-sm font-semibold text-red-700 hidden rounded leading-relaxed"></div>
+        <div id="errorMsg" class="mt-4 p-3 bg-red-50 border-r-4 border-red-500 text-sm font-semibold text-red-700 hidden rounded leading-relaxed" aria-live="assertive" role="alert"></div>
         <!-- לוח שלמות -->
         <div id="qualityDashboard" class="stage-card mt-6 hidden p-5 rounded-xl bg-slate-50">
             <h2 class="text-xl font-bold text-slate-800 mb-3">📊 לוח בקרת שלמות התמלול</h2>
@@ -663,7 +665,7 @@
             <label class="block text-sm font-semibold mb-2">הנחיות מיוחדות לעריכה (אופציונלי):</label>
             <textarea id="customEditPrompt" class="w-full p-2 border rounded bg-white text-sm focus:ring-2 focus:ring-green-500 outline-none" rows="2"></textarea>
             <button id="editBtn" onclick="startEditing()" class="w-full mt-3 bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition disabled:bg-gray-400">בצע עריכה מתקדמת</button>
-            <div id="editStatus" class="mt-3 text-sm font-semibold text-green-700 hidden flex items-center bg-green-100 p-3 rounded-lg border border-green-300">
+            <div id="editStatus" class="mt-3 text-sm font-semibold text-green-700 hidden flex items-center bg-green-100 p-3 rounded-lg border border-green-300" aria-live="polite" role="status">
                 <div class="loader" style="border-top-color: #16a34a;"></div>
                 <span class="pulse-text flex-1" id="editStatusText">המערכת עורכת...</span>
                 <span id="editTimerDisplay" class="timer mr-3" style="color: #16a34a; background: white;">00:00</span>
@@ -966,11 +968,4 @@
 
     <!-- v8.6: כפתור חזרה למעלה -->
     <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="חזרה למעלה"
-        style="position:fixed; bottom:20px; left:20px; z-index:60; width:44px; height:44px; border-radius:50%; background:#4338ca; color:white; border:none; font-size:1.2rem; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.25); display:none;">⬆️</button>
-
-    <script src="app.js"></script>
-    <script src="sefaria.js"></script>
-    <script src="proofing.js"></script>
-    <script src="publishing.js"></script>
-</body>
-</html>
+        style="position:fixed; bottom:20px; left:20px; z-index:60; width:44px; height:44px; border-radiu

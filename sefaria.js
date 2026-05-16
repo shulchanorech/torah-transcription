@@ -937,12 +937,22 @@ async function runTopicSearch() {
         results.forEach(res => {
             const item = document.createElement('div');
             item.className = 'topic-result-item';
+            // v9.1: sanitization של snippet למניעת XSS - Sefaria מחזיר HTML עם תגי highlight
+            let safeSnippet = '';
+            if (res.snippet) {
+                safeSnippet = String(res.snippet)
+                    .replace(/<\s*(script|style|iframe|object|embed|form|input|link|meta)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
+                    .replace(/<\s*(script|style|iframe|object|embed|form|input|link|meta)\b[^>]*\/?>/gi, '')
+                    .replace(/\son\w+\s*=\s*(["\'])[^"\']*\1/gi, '')
+                    .replace(/\son\w+\s*=\s*[^\s>]+/gi, '')
+                    .replace(/javascript\s*:/gi, '');
+            }
             item.innerHTML =
                 '<div class="topic-result-ref">' + escapeHtmlV9(res.heRef || res.ref) +
                 (res.category ? ' <span class="topic-result-cat">' + escapeHtmlV9(res.category) + '</span>' : '') +
                 '</div>' +
-                (res.snippet ? '<div class="topic-result-snippet" dir="rtl">' +
-                    res.snippet + '</div>' : '');
+                (safeSnippet ? '<div class="topic-result-snippet" dir="rtl">' +
+                    safeSnippet + '</div>' : '');
             const linkRow = document.createElement('div');
             linkRow.className = 'topic-result-actions';
             const openLink = document.createElement('a');
