@@ -645,24 +645,53 @@ function monoFloat32ToWavBlob(input) {
  * זהה ל-uploadFileToGemini אבל מקבל Blob במקום File.
  */
 async function uploadAudioBlobToGemini(apiKey, blob, name) {
+    if (!apiKey || apiKey.length < 20) {
+        throw new Error("מפתח Gemini API חסר או קצר מדי.");
+    }
+    if (!blob || blob.size === 0) {
+        throw new Error("חלק האודיו ריק — לא ניתן להעלות.");
+    }
     const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
     const safeFileName = (name || 'chunk') + '_' + Date.now() + '.wav';
-    const response = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-            'X-Goog-Upload-Protocol': 'raw', 'X-Goog-Upload-Command': 'upload',
-            'X-Goog-Upload-File-Name': safeFileName,
-            'X-Goog-Upload-Header-Content-Length': blob.size.toString(),
-            'X-Goog-Upload-Header-Content-Type': 'audio/wav',
-            'Content-Type': 'audio/wav'
-        },
-        body: blob
-    });
+    let response;
+    try {
+        response = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+                'X-Goog-Upload-Protocol': 'raw', 'X-Goog-Upload-Command': 'upload',
+                'X-Goog-Upload-File-Name': safeFileName,
+                'X-Goog-Upload-Header-Content-Length': blob.size.toString(),
+                'X-Goog-Upload-Header-Content-Type': 'audio/wav',
+                'Content-Type': 'audio/wav'
+            },
+            body: blob
+        });
+    } catch (networkErr) {
+        throw new Error("כשל רשת בעת העלאת חלק האודיו: " + networkErr.message);
+    }
     if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error?.message || "שגיאה בהעלאת חלק האודיו.");
+        let errMsg = "";
+        let rawText = "";
+        try { rawText = await response.text(); } catch (e) {}
+        if (rawText) {
+            try {
+                const errData = JSON.parse(rawText);
+                errMsg = errData.error?.message || errData.error?.status || "";
+            } catch (e) {
+                errMsg = rawText.substring(0, 300);
+            }
+        }
+        const httpCode = response.status;
+        let hint = "";
+        if (httpCode === 401 || httpCode === 403) hint = " (מפתח API לא מורשה)";
+        else if (httpCode === 429) hint = " (חרגת ממכסה)";
+        else if (httpCode >= 500) hint = " (שגיאת שרת Google)";
+        throw new Error(`שגיאה בהעלאת חלק האודיו (HTTP ${httpCode})${hint}: ${errMsg || 'אין פירוט'}`);
     }
     const data = await response.json();
+    if (!data || !data.file) {
+        throw new Error("התגובה מ-Gemini לא הכילה מידע על חלק האודיו שהועלה.");
+    }
     return data.file;
 }
 
@@ -2865,24 +2894,90 @@ async function startVerifyFidelity() {
 }
 
 async function uploadFileToGemini(apiKey, file) {
+    // אבחון בסיסי לפני העלאה
+    if (!apiKey || apiKey.length < 20) {
+        throw new Error("מפתח Gemini API חסר או קצר מדי. ודא שהזנת מפתח תקין.");
+    }
+    if (!file) {
+        throw new Error("לא נבחר קובץ להעלאה.");
+    }
+    if (file.size === 0) {
+        throw new Error("הקובץ שנבחר ריק (0 בייטים).");
+    }
+    // Gemini Files API מאפשר עד 2GB לקובץ
+    const maxBytes = 2 * 1024 * 1024 * 1024;
+    if (file.size > maxBytes) {
+        throw new Error(`הקובץ גדול מדי (${(file.size / (1024*1024*1024)).toFixed(2)}GB). המגבלה היא 2GB.`);
+    }
+
+    // קביעת MIME type חכמה — לפי הסיומת אם הדפדפן לא זיהה
+    let mimeType = file.type;
+    if (!mimeType || mimeType === '') {
+        const name = (file.name || '').toLowerCase();
+        if (name.endsWith('.mp3')) mimeType = 'audio/mp3';
+        else if (name.endsWith('.wav')) mimeType = 'audio/wav';
+        else if (name.endsWith('.m4a')) mimeType = 'audio/mp4';
+        else if (name.endsWith('.aac')) mimeType = 'audio/aac';
+        else if (name.endsWith('.ogg') || name.endsWith('.oga')) mimeType = 'audio/ogg';
+        else if (name.endsWith('.flac')) mimeType = 'audio/flac';
+        else if (name.endsWith('.opus')) mimeType = 'audio/opus';
+        else if (name.endsWith('.webm')) mimeType = 'audio/webm';
+        else mimeType = 'audio/mp3';
+    }
+    // נרמול — Gemini לא מקבל audio/mpeg, רק audio/mp3
+    if (mimeType === 'audio/mpeg') mimeType = 'audio/mp3';
+
     const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
-    const safeFileName = 'audio_upload_' + Date.now() + '.mp3';
-    const response = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-            'X-Goog-Upload-Protocol': 'raw', 'X-Goog-Upload-Command': 'upload',
-            'X-Goog-Upload-File-Name': safeFileName,
-            'X-Goog-Upload-Header-Content-Length': file.size.toString(),
-            'X-Goog-Upload-Header-Content-Type': file.type || 'audio/mp3',
-            'Content-Type': file.type || 'audio/mp3'
-        },
-        body: file
-    });
+    // שם קובץ בטוח — בלי תווים בעברית/מיוחדים שעלולים להפיל את ה-header
+    const ext = mimeType.split('/')[1] || 'mp3';
+    const safeFileName = 'audio_upload_' + Date.now() + '.' + ext;
+
+    let response;
+    try {
+        response = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+                'X-Goog-Upload-Protocol': 'raw',
+                'X-Goog-Upload-Command': 'upload',
+                'X-Goog-Upload-File-Name': safeFileName,
+                'X-Goog-Upload-Header-Content-Length': file.size.toString(),
+                'X-Goog-Upload-Header-Content-Type': mimeType,
+                'Content-Type': mimeType
+            },
+            body: file
+        });
+    } catch (networkErr) {
+        throw new Error("כשל רשת בעת העלאת הקובץ ל-Gemini: " + networkErr.message + ". בדוק חיבור אינטרנט/חומת אש.");
+    }
+
     if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error?.message || "שגיאה בהעלאת הקובץ.");
+        // קריאת התגובה גם כ-JSON וגם כטקסט כדי לא להחמיץ פרטים
+        let errMsg = "";
+        let rawText = "";
+        try { rawText = await response.text(); } catch (e) {}
+        if (rawText) {
+            try {
+                const errData = JSON.parse(rawText);
+                errMsg = errData.error?.message || errData.error?.status || "";
+            } catch (e) {
+                errMsg = rawText.substring(0, 300);
+            }
+        }
+        // הוספת קוד HTTP להודעה
+        const httpCode = response.status;
+        let hint = "";
+        if (httpCode === 400) hint = " (בקשה לא תקינה — ייתכן ש-MIME type של הקובץ לא נתמך)";
+        else if (httpCode === 401 || httpCode === 403) hint = " (מפתח API לא מורשה — בדוק שהמפתח תקין ושיש לו גישה ל-Gemini Files API)";
+        else if (httpCode === 404) hint = " (כתובת ה-API לא נמצאה)";
+        else if (httpCode === 413) hint = " (הקובץ גדול מדי)";
+        else if (httpCode === 429) hint = " (חרגת ממכסה — נסה שוב בעוד מספר דקות)";
+        else if (httpCode >= 500) hint = " (שגיאת שרת בצד Google — נסה שוב)";
+        throw new Error(`שגיאה בהעלאת הקובץ (HTTP ${httpCode})${hint}: ${errMsg || 'אין פירוט'}`);
     }
     const data = await response.json();
+    if (!data || !data.file) {
+        throw new Error("התגובה מ-Gemini לא הכילה מידע על הקובץ שהועלה.");
+    }
     return data.file;
 }
 
