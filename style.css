@@ -1603,7 +1603,7 @@ input::-webkit-scrollbar-thumb {
 }
 
 /* Global dark typography for light-themed panels and gradient wrappers */
-[class*="bg-amber-50"], [class*="bg-emerald-50"], [class*="bg-indigo-50"], [class*="bg-blue-50"],
+.bg-gradient-to-l, [class*="bg-gradient-to-l"], [class*="bg-amber-50"], [class*="bg-emerald-50"], [class*="bg-indigo-50"], [class*="bg-blue-50"],
 [class*="bg-cyan-50"], [class*="bg-violet-50"], [class*="bg-purple-50"], [class*="bg-slate-50"],
 [class*="bg-green-50"], [class*="bg-teal-50"], [class*="bg-yellow-50"], [class*="bg-rose-50"],
 [class*="bg-pink-50"], [class*="bg-fuchsia-50"],
