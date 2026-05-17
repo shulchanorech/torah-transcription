@@ -1618,6 +1618,12 @@ input::-webkit-scrollbar-thumb {
     color: #1f2937;
 }
 
+[class*="bg-gradient-to-l"] *,
+[class*="from-"][class*="-50"] *,
+[class*="to-"][class*="-50"] * {
+    color: #1f2937 !important;
+}
+
 /* טקסטי amber-700/800 על רקעי צהוב-בהיר */
 [class*="bg-amber-50"] .text-amber-700, [class*="bg-amber-50"] .text-amber-800,
 [class*="bg-yellow-50"] .text-amber-700, [class*="bg-yellow-50"] .text-amber-800,
