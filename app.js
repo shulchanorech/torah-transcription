@@ -1491,6 +1491,22 @@ async function autoValidateGeminiKey(silent) {
             `❌ <strong>המפתח מכיל תווים לא תקניים.</strong> מפתח Gemini תקין מורכב מאותיות, מספרים, _ ו-- בלבד.`);
         return;
     }
+    // בדיקת פורמט מפתח Gemini — תמיד מתחיל ב-AIza, אורך 39 תווים
+    if (!key.startsWith('AIza')) {
+        if (!silent) showAutoKeyStatus('error',
+            `❌ <strong>זה לא נראה כמו מפתח Gemini API.</strong><br>` +
+            `מפתחות Gemini תמיד מתחילים ב-<code>AIza</code> ואורכם 39 תווים.<br>` +
+            `המפתח שהזנת מתחיל ב-<code>${key.substring(0, 4)}</code> (אורך: ${key.length}).<br>` +
+            `<a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline">לחץ כאן ליצירת מפתח חדש ב-Google AI Studio</a> ` +
+            `(לא ב-Google Cloud Console!).`);
+        return;
+    }
+    if (key.length !== 39) {
+        if (!silent) showAutoKeyStatus('error',
+            `❌ <strong>אורך המפתח לא תקין:</strong> ${key.length} תווים (הצפוי: 39).<br>` +
+            `ודא שהעתקת את כל המפתח, ללא קיצוץ או הוספת תווים.`);
+        return;
+    }
 
     if (!silent) showAutoKeyStatus('checking', 'בודק את המפתח מול שרתי Google…');
     try {
@@ -1507,14 +1523,25 @@ async function autoValidateGeminiKey(silent) {
             const preview = rawText.substring(0, 200).replace(/</g, '&lt;');
             let diagnostic = '';
             if (looksLikeHtml) {
-                diagnostic =
-                    `שרתי Google החזירו דף HTML במקום JSON. סיבות אפשריות:<br>` +
-                    `• <strong>חומת אש / פרוקסי תאגידי</strong> חוסמים את generativelanguage.googleapis.com<br>` +
-                    `• <strong>תוסף דפדפן</strong> (חוסם פרסומות/פרטיות) חוסם את הבקשה<br>` +
-                    `• <strong>VPN או captive portal</strong> מפנים לדף אחר<br>` +
-                    `• <strong>חיבור לאינטרנט דרך רשת ציבורית</strong> שדורשת התחברות<br>` +
-                    `נסה: לפתוח חלון גלישה בסתר (Incognito), לכבות תוספים, לבדוק חיבור ישיר.<br>` +
-                    `<details><summary>תצוגה מקדימה של התגובה</summary><pre style="font-size:10px;white-space:pre-wrap">${preview}</pre></details>`;
+                // 404 + HTML זה דפוס קלאסי של "מפתח לא תקף ב-Gemini"
+                if (resp.status === 404) {
+                    diagnostic =
+                        `<strong>השרת החזיר 404 — סימן שהמפתח לא מוכר ל-Gemini API.</strong> ` +
+                        `הסיבות הסבירות ביותר:<br>` +
+                        `• המפתח <strong>נוצר ב-Google Cloud Console</strong> במקום ב-Google AI Studio — צריך ליצור אותו ב-<a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline">aistudio.google.com</a><br>` +
+                        `• המפתח <strong>חדש מאוד</strong> — חכה 2-3 דקות והודבק שוב.<br>` +
+                        `• המפתח שייך לפרויקט ש-<strong>Generative Language API לא מופעל בו</strong>.<br>` +
+                        `• המפתח <strong>הוגבל לדומיינים ספציפיים</strong> שלא כוללים את האתר הזה.`;
+                } else {
+                    diagnostic =
+                        `שרתי Google החזירו דף HTML במקום JSON. סיבות אפשריות:<br>` +
+                        `• <strong>חומת אש / פרוקסי תאגידי</strong> חוסמים את generativelanguage.googleapis.com<br>` +
+                        `• <strong>תוסף דפדפן</strong> (חוסם פרסומות/פרטיות) חוסם את הבקשה<br>` +
+                        `• <strong>VPN או captive portal</strong> מפנים לדף אחר<br>` +
+                        `• <strong>חיבור לאינטרנט דרך רשת ציבורית</strong> שדורשת התחברות<br>` +
+                        `נסה: לפתוח חלון גלישה בסתר (Incognito), לכבות תוספים, לבדוק חיבור ישיר.`;
+                }
+                diagnostic += `<br><details><summary>תצוגה מקדימה של התגובה</summary><pre style="font-size:10px;white-space:pre-wrap">${preview}</pre></details>`;
             } else {
                 diagnostic = `תגובה לא צפויה מהשרת: ${preview}`;
             }
