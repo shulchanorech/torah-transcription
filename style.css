@@ -1602,6 +1602,22 @@ input::-webkit-scrollbar-thumb {
     color: #334155 !important;
 }
 
+/* Global dark typography for light-themed panels and gradient wrappers */
+[class*="bg-amber-50"], [class*="bg-emerald-50"], [class*="bg-indigo-50"], [class*="bg-blue-50"],
+[class*="bg-cyan-50"], [class*="bg-violet-50"], [class*="bg-purple-50"], [class*="bg-slate-50"],
+[class*="bg-green-50"], [class*="bg-teal-50"], [class*="bg-yellow-50"], [class*="bg-rose-50"],
+[class*="bg-pink-50"], [class*="bg-fuchsia-50"],
+[class*="from-amber-50"], [class*="from-emerald-50"], [class*="from-indigo-50"], [class*="from-blue-50"],
+[class*="from-cyan-50"], [class*="from-violet-50"], [class*="from-purple-50"], [class*="from-slate-50"],
+[class*="from-green-50"], [class*="from-teal-50"], [class*="from-yellow-50"], [class*="from-rose-50"],
+[class*="from-pink-50"], [class*="from-fuchsia-50"],
+[class*="to-amber-50"], [class*="to-emerald-50"], [class*="to-indigo-50"], [class*="to-blue-50"],
+[class*="to-cyan-50"], [class*="to-violet-50"], [class*="to-purple-50"], [class*="to-slate-50"],
+[class*="to-green-50"], [class*="to-teal-50"], [class*="to-yellow-50"], [class*="to-rose-50"],
+[class*="to-pink-50"], [class*="to-fuchsia-50"] {
+    color: #1f2937;
+}
+
 /* טקסטי amber-700/800 על רקעי צהוב-בהיר */
 [class*="bg-amber-50"] .text-amber-700, [class*="bg-amber-50"] .text-amber-800,
 [class*="bg-yellow-50"] .text-amber-700, [class*="bg-yellow-50"] .text-amber-800,
