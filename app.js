@@ -108,9 +108,23 @@ function openGateModal() {
 }
 
 function buildGeminiUrl(path, apiKey, extraParams = {}) {
+    // Resolve API key: prefer explicit arg, then DOM input, then localStorage.
+    let key = apiKey;
+    if (typeof key === 'undefined' || key === null || String(key).trim() === '' || String(key).trim() === 'undefined') {
+        const el = typeof document !== 'undefined' ? document.getElementById('geminiApiKey') : null;
+        if (el && typeof el.value === 'string' && el.value.trim() !== '' && el.value.trim() !== 'undefined') {
+            key = el.value.trim();
+        } else {
+            try {
+                const stored = localStorage.getItem('torahApp_geminiKey');
+                if (stored && stored.trim() !== '' && stored.trim() !== 'undefined') key = stored.trim();
+            } catch (e) {}
+        }
+    }
+
     const baseUrl = 'https://generativelanguage.googleapis.com/';
     const url = new URL(path, baseUrl);
-    url.searchParams.append('key', apiKey);
+    if (key) url.searchParams.append('key', String(key));
     for (const [paramName, paramValue] of Object.entries(extraParams)) {
         if (paramValue !== undefined && paramValue !== null) {
             url.searchParams.append(paramName, String(paramValue));
@@ -1360,8 +1374,14 @@ function saveStoredKeys() {
     try {
         const gk = document.getElementById('geminiApiKey');
         const ck = document.getElementById('claudeApiKey');
-        if (gk) localStorage.setItem('torahApp_geminiKey', gk.value || '');
-        if (ck) localStorage.setItem('torahApp_claudeKey', ck.value || '');
+        if (gk) {
+            const v = (typeof gk.value === 'string' && gk.value.trim() !== 'undefined' && gk.value.trim() !== 'null') ? gk.value.trim() : '';
+            localStorage.setItem('torahApp_geminiKey', v);
+        }
+        if (ck) {
+            const v2 = (typeof ck.value === 'string' && ck.value.trim() !== 'undefined' && ck.value.trim() !== 'null') ? ck.value.trim() : '';
+            localStorage.setItem('torahApp_claudeKey', v2);
+        }
     } catch (e) {}
 }
 function loadStoredKeys() {
@@ -1369,8 +1389,16 @@ function loadStoredKeys() {
         const gk = document.getElementById('geminiApiKey');
         const ck = document.getElementById('claudeApiKey');
         // תאימות לאחור: גרסאות קודמות שמרו רק אם torahApp_remember=1 — כעת תמיד טוענים אם קיים.
-        if (gk) gk.value = localStorage.getItem('torahApp_geminiKey') || '';
-        if (ck) ck.value = localStorage.getItem('torahApp_claudeKey') || '';
+        if (gk) {
+            let stored = localStorage.getItem('torahApp_geminiKey');
+            if (stored === 'undefined' || stored === 'null') stored = '';
+            gk.value = (stored || '').trim();
+        }
+        if (ck) {
+            let storedC = localStorage.getItem('torahApp_claudeKey');
+            if (storedC === 'undefined' || storedC === 'null') storedC = '';
+            ck.value = (storedC || '').trim();
+        }
         // ניקוי דגל ישן שלא בשימוש עוד
         localStorage.removeItem('torahApp_remember');
     } catch (e) {}
@@ -3900,7 +3928,9 @@ function applySpeakerStyling(span, word) {
 
 // v8.1: בדיקת תקינות מפתח Gemini API + הצעת פעולה למפתחות פגי-תוקף
 async function testGeminiApiKey() {
-    const key = document.getElementById('geminiApiKey').value.trim();
+    const keyEl = document.getElementById('geminiApiKey');
+    const keyFromInput = keyEl && typeof keyEl.value === 'string' ? keyEl.value.trim() : '';
+    const key = keyFromInput || (localStorage.getItem('torahApp_geminiKey') || '').trim();
     const result = document.getElementById('testKeyResult');
     const btn = document.getElementById('testKeyBtn');
     if (!key) {
