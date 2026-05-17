@@ -107,6 +107,17 @@ function openGateModal() {
     }
 }
 
+function buildGeminiUrl(path, apiKey, extraParams = {}) {
+    const url = new URL(`https://generativelanguage.googleapis.com/${path}`);
+    url.searchParams.append('key', apiKey);
+    for (const [paramName, paramValue] of Object.entries(extraParams)) {
+        if (paramValue !== undefined && paramValue !== null) {
+            url.searchParams.append(paramName, String(paramValue));
+        }
+    }
+    return url.toString();
+}
+
 // =======================================================
 // מילון תורני מובנה — נטען אוטומטית כתוספת לכל קריאה
 // הכתיב הזה מוסכם, מקצועי, ועוזר למודל לא להמציא איות פונטי
@@ -668,7 +679,7 @@ async function uploadAudioBlobToGemini(apiKey, blob, name) {
     if (!blob || blob.size === 0) {
         throw new Error("חלק האודיו ריק — לא ניתן להעלות.");
     }
-    const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
+    const uploadUrl = buildGeminiUrl('upload/v1beta/files', apiKey);
     const safeFileName = (name || 'chunk') + '_' + Date.now() + '.wav';
     let response;
     try {
@@ -1510,7 +1521,7 @@ async function autoValidateGeminiKey(silent) {
 
     if (!silent) showAutoKeyStatus('checking', 'בודק את המפתח מול שרתי Google…');
     try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`;
+        const url = buildGeminiUrl('v1beta/models', key);
         const resp = await fetch(url);
 
         // קוראים את התגובה כטקסט קודם — כדי לא להיתקע על Unexpected token
@@ -3023,7 +3034,7 @@ async function uploadFileToGemini(apiKey, file) {
     // נרמול — Gemini לא מקבל audio/mpeg, רק audio/mp3
     if (mimeType === 'audio/mpeg') mimeType = 'audio/mp3';
 
-    const uploadUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
+    const uploadUrl = buildGeminiUrl('upload/v1beta/files', apiKey);
     // שם קובץ בטוח — בלי תווים בעברית/מיוחדים שעלולים להפיל את ה-header
     const ext = mimeType.split('/')[1] || 'mp3';
     const safeFileName = 'audio_upload_' + Date.now() + '.' + ext;
@@ -3078,7 +3089,7 @@ async function uploadFileToGemini(apiKey, file) {
 }
 
 async function waitForFileProcessing(apiKey, fileName, statusTextElement) {
-    const getUrl = `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`;
+    const getUrl = buildGeminiUrl(`v1beta/${fileName}`, apiKey);
     let attempts = 0;
     let consecutiveErrors = 0;
     while (attempts < 150) {
@@ -3121,7 +3132,7 @@ async function waitForFileProcessing(apiKey, fileName, statusTextElement) {
 // קריאת Gemini עם תמיכה ב-maxOutputTokens אופציונלי
 // =======================================================
 async function callGeminiAPIStreaming(apiKey, model, systemInstruction, contentPart, userTextPrompt, onChunkCallback, options = {}) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
+    const url = buildGeminiUrl(`v1beta/models/${model}:streamGenerateContent`, apiKey, { alt: 'sse' });
     const parts = [{ text: userTextPrompt }];
     if (contentPart && contentPart.fileData) {
         // אם יש videoMetadata (לטווחי-זמן בצ'אנקים) — הוסף ל-part
@@ -3903,7 +3914,7 @@ async function testGeminiApiKey() {
     result.textContent = 'בודק את המפתח מול שרתי Google...';
     result.classList.remove('hidden');
     try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`;
+        const url = buildGeminiUrl('v1beta/models', key);
         const resp = await fetch(url);
         const data = await resp.json();
         if (resp.ok && data.models && data.models.length > 0) {
