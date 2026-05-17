@@ -108,7 +108,8 @@ function openGateModal() {
 }
 
 function buildGeminiUrl(path, apiKey, extraParams = {}) {
-    const url = new URL(`https://generativelanguage.googleapis.com/${path}`);
+    const baseUrl = 'https://generativelanguage.googleapis.com/';
+    const url = new URL(path, baseUrl);
     url.searchParams.append('key', apiKey);
     for (const [paramName, paramValue] of Object.entries(extraParams)) {
         if (paramValue !== undefined && paramValue !== null) {
