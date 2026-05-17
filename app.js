@@ -541,12 +541,29 @@ let cachedDecodedFor = null; // שם הקובץ שהבאפר נוצר עבורו
 
 async function decodeAudioFile(file) {
     if (cachedDecodedBuffer && cachedDecodedFor === file.name) return cachedDecodedBuffer;
-    const arrayBuffer = await file.arrayBuffer();
+    if (!file) throw new Error('לא נבחר קובץ אודיו לפענוח.');
+    if (file.size === 0) throw new Error('קובץ האודיו ריק.');
+    let arrayBuffer;
+    try {
+        arrayBuffer = await file.arrayBuffer();
+    } catch (e) {
+        throw new Error('שגיאה בקריאת הקובץ מהדיסק: ' + e.message);
+    }
     const Ctor = window.AudioContext || window.webkitAudioContext;
-    if (!Ctor) throw new Error('הדפדפן לא תומך ב-AudioContext.');
+    if (!Ctor) throw new Error('הדפדפן לא תומך ב-AudioContext. נסה דפדפן עדכני (Chrome/Edge/Firefox).');
     const ctx = new Ctor();
-    const buf = await ctx.decodeAudioData(arrayBuffer.slice(0));
+    let buf;
+    try {
+        buf = await ctx.decodeAudioData(arrayBuffer.slice(0));
+    } catch (e) {
+        try { ctx.close(); } catch (closeErr) {}
+        const fileExt = (file.name || '').split('.').pop().toLowerCase();
+        throw new Error(`לא ניתן לפענח את קובץ האודיו (${fileExt || 'לא ידוע'}). הקובץ עלול להיות פגום או בפורמט שהדפדפן לא תומך בו. נסה להמיר ל-MP3/WAV. (פרטים: ${e.message || 'אין'})`);
+    }
     try { ctx.close(); } catch (e) {}
+    if (!buf || buf.length === 0) {
+        throw new Error('פענוח האודיו הסתיים אך החזיר באפר ריק.');
+    }
     cachedDecodedBuffer = buf;
     cachedDecodedFor = file.name;
     return buf;
@@ -1454,13 +1471,58 @@ function showAutoKeyStatus(kind, html) {
 // silent=true → לא מציג "בודק..." (לטעינת-דף שקטה); אחרת מציג משוב מלא.
 async function autoValidateGeminiKey(silent) {
     const gk = document.getElementById('geminiApiKey');
-    const key = gk ? gk.value.trim() : '';
+    const rawKey = gk ? gk.value : '';
+    const key = rawKey.trim();
     if (!key || key.length < 10) return; // אין מה לבדוק
+
+    // אבחון מקדים — האם המפתח מכיל תווים חשודים?
+    if (/\s/.test(key)) {
+        if (!silent) showAutoKeyStatus('error',
+            `❌ <strong>המפתח מכיל רווחים</strong> — הסר אותם והדבק מחדש.`);
+        return;
+    }
+    if (/[<>"']/.test(key)) {
+        if (!silent) showAutoKeyStatus('error',
+            `❌ <strong>המפתח מכיל תווים לא חוקיים</strong> (כמו &lt; או &gt;). ודא שהעתקת רק את המפתח עצמו, ללא תגי HTML.`);
+        return;
+    }
+    if (!/^[A-Za-z0-9_\-]+$/.test(key)) {
+        if (!silent) showAutoKeyStatus('error',
+            `❌ <strong>המפתח מכיל תווים לא תקניים.</strong> מפתח Gemini תקין מורכב מאותיות, מספרים, _ ו-- בלבד.`);
+        return;
+    }
+
     if (!silent) showAutoKeyStatus('checking', 'בודק את המפתח מול שרתי Google…');
     try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`;
         const resp = await fetch(url);
-        const data = await resp.json();
+
+        // קוראים את התגובה כטקסט קודם — כדי לא להיתקע על Unexpected token
+        const rawText = await resp.text();
+        let data;
+        try {
+            data = JSON.parse(rawText);
+        } catch (parseErr) {
+            const looksLikeHtml = rawText.trim().startsWith('<');
+            const preview = rawText.substring(0, 200).replace(/</g, '&lt;');
+            let diagnostic = '';
+            if (looksLikeHtml) {
+                diagnostic =
+                    `שרתי Google החזירו דף HTML במקום JSON. סיבות אפשריות:<br>` +
+                    `• <strong>חומת אש / פרוקסי תאגידי</strong> חוסמים את generativelanguage.googleapis.com<br>` +
+                    `• <strong>תוסף דפדפן</strong> (חוסם פרסומות/פרטיות) חוסם את הבקשה<br>` +
+                    `• <strong>VPN או captive portal</strong> מפנים לדף אחר<br>` +
+                    `• <strong>חיבור לאינטרנט דרך רשת ציבורית</strong> שדורשת התחברות<br>` +
+                    `נסה: לפתוח חלון גלישה בסתר (Incognito), לכבות תוספים, לבדוק חיבור ישיר.<br>` +
+                    `<details><summary>תצוגה מקדימה של התגובה</summary><pre style="font-size:10px;white-space:pre-wrap">${preview}</pre></details>`;
+            } else {
+                diagnostic = `תגובה לא צפויה מהשרת: ${preview}`;
+            }
+            if (!silent) showAutoKeyStatus('error',
+                `❌ <strong>שגיאה בבדיקת המפתח (HTTP ${resp.status}):</strong><br>${diagnostic}`);
+            return;
+        }
+
         if (!resp.ok || !data.models || data.models.length === 0) {
             const errMsg = (data.error && data.error.message) || `קוד שגיאה ${resp.status}`;
             showAutoKeyStatus('error', `❌ <strong>המפתח אינו תקין:</strong> ${errMsg}<br>` +
@@ -1499,9 +1561,16 @@ async function autoValidateGeminiKey(silent) {
             showAutoKeyStatus('ok', `✅ <strong>המפתח תקין</strong> — זוהו ${data.models.length} מודלים זמינים בחשבון.`);
         }
     } catch (e) {
-        // שגיאת רשת — בבדיקה שקטה לא מטרידים את המשתמש
+        // שגיאת רשת אמיתית — fetch נכשל לגמרי
         if (!silent) {
-            showAutoKeyStatus('error', `❌ שגיאת רשת בבדיקת המפתח: ${e.message}<br>בדוק את החיבור לאינטרנט.`);
+            let extra = '';
+            const msg = (e && e.message) || '';
+            if (msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('networkerror')) {
+                extra = '<br>ייתכן ש-CORS חסום, או שאין חיבור לאינטרנט, או שחומת אש חוסמת את הגישה ל-generativelanguage.googleapis.com.';
+            } else if (msg.includes('Unexpected token')) {
+                extra = '<br>השרת החזיר HTML במקום JSON — סביר שיש פרוקסי/חומת אש/תוסף שחוסם.';
+            }
+            showAutoKeyStatus('error', `❌ שגיאת רשת בבדיקת המפתח: ${msg}${extra}`);
         }
     }
 }
@@ -2984,18 +3053,41 @@ async function uploadFileToGemini(apiKey, file) {
 async function waitForFileProcessing(apiKey, fileName, statusTextElement) {
     const getUrl = `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`;
     let attempts = 0;
+    let consecutiveErrors = 0;
     while (attempts < 150) {
-        const response = await fetch(getUrl);
-        if (!response.ok) throw new Error("שגיאה בבדיקת מצב הקובץ.");
+        let response;
+        try {
+            response = await fetch(getUrl);
+        } catch (netErr) {
+            // שגיאת רשת זמנית — ננסה שוב עד 3 פעמים רצוף
+            consecutiveErrors++;
+            if (consecutiveErrors >= 3) {
+                throw new Error("כשל רשת מתמשך בבדיקת מצב הקובץ: " + netErr.message);
+            }
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            continue;
+        }
+        if (!response.ok) {
+            let errMsg = "";
+            try {
+                const errData = await response.json();
+                errMsg = errData.error?.message || "";
+            } catch (e) {}
+            throw new Error(`שגיאה בבדיקת מצב הקובץ (HTTP ${response.status}): ${errMsg || 'אין פירוט'}`);
+        }
+        consecutiveErrors = 0;
         const data = await response.json();
         attempts++;
         if (statusTextElement) statusTextElement.innerText = `מעבד שמע... (${attempts}/150)`;
         if (data.state === 'ACTIVE') return true;
-        if (data.state === 'FAILED') throw new Error("עיבוד הקובץ נכשל.");
+        if (data.state === 'FAILED') {
+            const reason = data.error?.message || data.state;
+            throw new Error("עיבוד הקובץ נכשל בצד Google: " + reason);
+        }
         if (!data.state && data.uri) return true;
         await new Promise(resolve => setTimeout(resolve, 3000));
     }
-    throw new Error("זמן העיבוד פג.");
+    throw new Error("זמן העיבוד פג (יותר מ-7.5 דקות). נסה שוב או העלה קובץ קצר יותר.");
 }
 
 // =======================================================
